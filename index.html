@@ -277,12 +277,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="field"><label class="req">Survey Date</label><input type="date" id="surveyDate"></div>
       <div class="field"><label class="req">Surveyor Name</label><input type="text" id="survName"></div>
       <div class="field"><label>Company</label>
-        <select id="source"><option value="Internal">Internal (PatientPoint employee)</option><option value="External">External (site/vendor)</option></select>
+        <select id="source"><option value="" selected disabled>Select...</option><option value="Internal">Internal (PatientPoint employee)</option><option value="External">External (site/vendor)</option></select>
       </div>
     </div>
     <div class="grid3">
       <div class="field" id="survCompanyField" style="display:none;"><label>Surveyor Company / Organization</label><input type="text" id="survCompany"></div>
-      <div class="field"><label>Surveyor Email</label><input type="email" id="survEmail" value="abdallah.youssef@patientpoint.com"></div>
+      <div class="field"><label>Surveyor Email</label><input type="email" id="survEmail" autocomplete="off"></div>
       <div class="field"><label>Surveyor Phone</label><input type="tel" id="survPhone"></div>
     </div>
   </section>
@@ -541,8 +541,6 @@ let autoLinkTouched = new Set(); // cf-check elements the surveyor has manually 
 const rooms = {}; // id -> {type, name, notes, photos:{wide:File,...}}
 const networkPhotos = {signal:null, optional:null, speedtest:null};
 
-document.getElementById("surveyDate").valueAsDate = new Date();
-
 function buildMapUrl(){
   const parts = [
     document.getElementById("street").value.trim(),
@@ -638,13 +636,23 @@ const egnyteLink = document.getElementById("egnyteLink");
 const submitNote = document.getElementById("submitNote");
 
 function updateCompanyDependentFields(){
-  const isInternal = sourceEl.value === "Internal";
+  const val = sourceEl.value;
+  const isInternal = val === "Internal";
+  const isExternal = val === "External";
 
-  survCompanyField.style.display = isInternal ? "none" : "block";
+  survCompanyField.style.display = isExternal ? "block" : "none";
   if(isInternal){
     survCompanyInput.value = "PatientPoint";
-  } else if(survCompanyInput.value.trim() === "PatientPoint" || survCompanyInput.value.trim() === ""){
+  } else if(isExternal && (survCompanyInput.value.trim() === "PatientPoint" || survCompanyInput.value.trim() === "")){
     survCompanyInput.value = "";
+  }
+
+  // Nothing chosen yet -- don't assume either way, keep both destinations locked until they pick.
+  if(!val){
+    sharepointLink.classList.add("disabled");
+    egnyteLink.classList.add("disabled");
+    submitNote.textContent = "Select Internal or External above to unlock the correct upload link.";
+    return;
   }
 
   // Internal can use either destination; External only has Egnyte (no PatientPoint SharePoint access).
@@ -673,6 +681,126 @@ updateNetworkFields();
 netTypeEl.addEventListener("change", ()=>{ syncAutoComplexityFactors(); maybeAutoSave(); });
 document.getElementById("dataCloset").addEventListener("change", ()=>{ syncAutoComplexityFactors(); maybeAutoSave(); });
 document.getElementById("captivePortal").addEventListener("change", ()=>{ syncAutoComplexityFactors(); maybeAutoSave(); });
+
+// --- Styled .xlsx workbook builder (zero extra dependencies -- just hand-built OOXML XML,
+// zipped with the JSZip already embedded above). Produces a real, multi-sheet Excel file
+// with a colored bold header row, banded rows, frozen header, autofilter, and sized columns,
+// so the export doesn't need two loose plain-text CSVs anymore.
+function xlsxEscape(s){
+  return String(s === undefined || s === null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+function xlsxColLetter(n){
+  let s = "";
+  while(n > 0){
+    const rem = (n - 1) % 26;
+    s = String.fromCharCode(65 + rem) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+const XLSX_STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="2">
+    <font><sz val="11"/><color rgb="FF1C2733"/><name val="Calibri"/></font>
+    <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="4">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF006177"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF4F6F8"/><bgColor indexed="64"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"><color rgb="FFDBE2E8"/></left>
+      <right style="thin"><color rgb="FFDBE2E8"/></right>
+      <top style="thin"><color rgb="FFDBE2E8"/></top>
+      <bottom style="thin"><color rgb="FFDBE2E8"/></bottom>
+    </border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="4">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf>
+  </cellXfs>
+  <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+function xlsxBuildSheetXml(sheet){
+  const headers = sheet.headers;
+  const rows = sheet.rows;
+  const colCount = headers.length;
+  const freezeCols = Math.min(sheet.freezeCols || 0, colCount);
+  const cols = [];
+  for(let c = 0; c < colCount; c++){
+    let maxLen = String(headers[c] || "").length;
+    rows.forEach(r => { const v = String(r[c] === undefined ? "" : r[c]); if(v.length > maxLen) maxLen = v.length; });
+    const width = Math.max(10, Math.min(42, maxLen + 2));
+    cols.push(`<col min="${c+1}" max="${c+1}" width="${width}" customWidth="1"/>`);
+  }
+  const rowsXml = [];
+  const headerCells = headers.map((h, i) => `<c r="${xlsxColLetter(i+1)}1" t="inlineStr" s="1"><is><t xml:space="preserve">${xlsxEscape(h)}</t></is></c>`).join("");
+  rowsXml.push(`<row r="1" ht="20" customHeight="1">${headerCells}</row>`);
+  rows.forEach((r, ri) => {
+    const rowNum = ri + 2;
+    const styleIdx = (ri % 2 === 0) ? 2 : 3;
+    const cells = headers.map((_, ci) => {
+      const val = r[ci] === undefined || r[ci] === null ? "" : r[ci];
+      return `<c r="${xlsxColLetter(ci+1)}${rowNum}" t="inlineStr" s="${styleIdx}"><is><t xml:space="preserve">${xlsxEscape(val)}</t></is></c>`;
+    }).join("");
+    rowsXml.push(`<row r="${rowNum}">${cells}</row>`);
+  });
+  const lastCol = xlsxColLetter(colCount);
+  const lastRow = rows.length + 1;
+  const paneXml = freezeCols > 0
+    ? `<pane xSplit="${freezeCols}" ySplit="1" topLeftCell="${xlsxColLetter(freezeCols+1)}2" activePane="bottomRight" state="frozen"/>`
+    : `<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetViews>
+    <sheetView workbookViewId="0">
+      ${paneXml}
+    </sheetView>
+  </sheetViews>
+  <cols>${cols.join("")}</cols>
+  <sheetData>${rowsXml.join("")}</sheetData>
+  <autoFilter ref="A1:${lastCol}${lastRow}"/>
+</worksheet>`;
+}
+async function buildStyledWorkbook(sheets, JSZipCtor){
+  const wbZip = new JSZipCtor();
+  wbZip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+${sheets.map((_, i) => `  <Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("\n")}
+</Types>`);
+  wbZip.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`);
+  wbZip.file("xl/workbook.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+${sheets.map((s, i) => `    <sheet name="${xlsxEscape(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("\n")}
+  </sheets>
+</workbook>`);
+  const relEntries = sheets.map((_, i) => `  <Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`);
+  relEntries.push(`  <Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`);
+  wbZip.file("xl/_rels/workbook.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+${relEntries.join("\n")}
+</Relationships>`);
+  wbZip.file("xl/styles.xml", XLSX_STYLES_XML);
+  sheets.forEach((s, i) => { wbZip.file(`xl/worksheets/sheet${i+1}.xml`, xlsxBuildSheetXml(s)); });
+  return wbZip;
+}
 
 function safeName(s){ return (s||"").trim().replace(/[\\/:*?"<>|]/g,"-").replace(/\s+/g," "); }
 
@@ -1425,11 +1553,6 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
   const blankRoomFields = ["","","","","","","","",""];
   const mergedRows = roomRows.length ? roomRows.map(rr => [...siteFieldsRow, ...rr]) : [[...siteFieldsRow, ...blankRoomFields]];
 
-  let mergedCsv = csvRow(mergedHeader);
-  mergedRows.forEach(r => mergedCsv += csvRow(r));
-
-  zip.file("Site_Room_Details_rows.csv", mergedCsv);
-
   // Survey Hand-Off: a short, skimmable field/value summary for whoever picks this site up
   // next (install team, scheduling, etc.) -- not the full backend row, just the essentials.
   const fullAddress = [
@@ -1457,8 +1580,14 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
     document.getElementById("installDate").value || "",
     networkSummary, roomIds.length, complexity.result, complexityFactorsStr,
   ];
-  const handoffCsv = csvRow(handoffHeader) + csvRow(handoffValues);
-  zip.file("Survey Hand-Off.csv", handoffCsv);
+  // One polished workbook instead of two loose CSVs: "Hand-Off Summary" (one quick-glance row)
+  // and "Room Details" (the full per-room backend feed), each with a styled header row.
+  const summaryWorkbookZip = await buildStyledWorkbook([
+    { name: "Hand-Off Summary", headers: handoffHeader, rows: [handoffValues] },
+    { name: "Room Details", headers: mergedHeader, rows: mergedRows, freezeCols: 2 },
+  ], JSZip);
+  const summaryWorkbookBlob = await summaryWorkbookZip.generateAsync({ type: "blob" });
+  zip.file("Site Survey Summary.xlsx", summaryWorkbookBlob);
 
   const readme = `PatientPoint Site Survey Export
 Location: ${locName}
@@ -1470,13 +1599,18 @@ HOW TO USE THIS EXPORT
 1. Drag the "${siteFolder}" folder into the correct SharePoint (internal) or Egnyte (external)
    Site Surveys library, exactly as-is. Do not rename it -- the file paths in the CSV below
    assume this folder name and structure.
-2. Open Site Survey Backend Tracker.xlsx, go to the "Sites Overview" tab.
-3. Open Site_Room_Details_rows.csv -- it has one row per room (or one row total if no rooms
-   were documented yet). Paste each row as a new row on "Sites Overview". Leave the Exam/
-   Waiting/Break Room Count and Map Link columns alone -- they're formulas and fill in on
-   their own. There's also a hidden helper column at the far right (used by the Dashboard) --
-   leave that alone too. If you paste beyond the pre-built formula rows, copy those formula
-   cells down from the row above into your new rows.
+2. Open "Site Survey Summary.xlsx" -- it has two tabs:
+   - "Hand-Off Summary": one quick-glance row (Location ID/Name, office hours, address, POC
+     contacts, install schedule, network connectivity, number of screens needed, and case
+     complexity) for whoever picks this site up next (install team, scheduling, etc.).
+   - "Room Details": one row per room (or one row total if no rooms were documented yet) --
+     this is the tab to paste into Site Survey Backend Tracker.xlsx.
+3. Open Site Survey Backend Tracker.xlsx, go to the "Sites Overview" tab, and paste each row
+   from "Room Details" as a new row there. Leave the Exam/Waiting/Break Room Count and Map
+   Link columns alone -- they're formulas and fill in on their own. There's also a hidden
+   helper column at the far right (used by the Dashboard) -- leave that alone too. If you
+   paste beyond the pre-built formula rows, copy those formula cells down from the row above
+   into your new rows.
 4. The photo columns currently contain the relative file path within this export (e.g.
    "${siteFolder}/Exam Room - Exam Room 1/ExamRoom1_WideShot.jpg"), not a clickable link yet.
    Once the folder is uploaded, replace each of those cells with:
@@ -1485,10 +1619,6 @@ HOW TO USE THIS EXPORT
 5. Any additional photos added beyond the 4 required ones are saved in each room's folder as
    "<RoomName>_Extra1.jpg", "_Extra2.jpg", etc. -- they aren't itemized as separate columns in
    the tracker, just kept alongside the required photos for reference.
-6. "Survey Hand-Off.csv" is a short summary sheet for whoever picks this site up next (install
-   team, scheduling, etc.) -- Location ID/Name, office hours, address, POC contacts, install
-   schedule, network connectivity, number of screens needed, and case complexity, all in one
-   quick-glance sheet instead of the full backend row.
 `;
   zip.file("README.txt", readme);
 
