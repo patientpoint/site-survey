@@ -225,7 +225,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     <div class="subhead">Location Details</div>
     <div class="grid3">
-      <div class="field"><label class="req">Location ID</label><input type="text" id="locId" placeholder="e.g. MSP-0142"></div>
+      <div class="field"><label class="req">Location ID</label><input type="text" id="locId" placeholder="e.g. P12345"></div>
       <div class="field"><label class="req">Location Name</label><input type="text" id="locName" placeholder="e.g. Main Street Pediatrics"></div>
       <div class="field"><label>Office Hours</label><input type="text" id="officeHours" placeholder="e.g. Mon-Fri 8am-5pm"></div>
     </div>
@@ -299,6 +299,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="grid">
       <div class="field"><label class="req">Network Type</label>
         <select id="netType">
+          <option value="" selected disabled>Select...</option>
           <option value="Wi-Fi">Wi-Fi</option>
           <option value="Cradlepoint (Cellular)">Cradlepoint (Cellular)</option>
           <option value="Wired (Ethernet)">Wired (Ethernet)</option>
@@ -309,7 +310,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="field"><label>Wi-Fi SSID</label><input type="text" id="ssid"></div>
       <div class="field"><label>Wi-Fi Password</label><input type="text" id="wifiPass"></div>
       <div class="field"><label>Terms &amp; Conditions / Captive Portal on this network?</label>
-        <select id="captivePortal"><option value="No">No</option><option value="Yes">Yes</option></select>
+        <select id="captivePortal"><option value="" selected disabled>Select...</option><option value="No">No</option><option value="Yes">Yes</option></select>
       </div>
       <div class="field"><label>Speed Test Results</label><input type="text" id="speedTest" placeholder="e.g. Download: 50 Mbps | Upload: 10 Mbps | Ping: 12ms"></div>
       <div class="field">
@@ -348,7 +349,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
     <div class="grid" id="wiredFields" style="display:none;">
       <div class="field"><label>Do we have access to the data closet?</label>
-        <select id="dataCloset"><option value="Yes">Yes</option><option value="No">No</option><option value="N/A">N/A</option></select>
+        <select id="dataCloset"><option value="" selected disabled>Select...</option><option value="Yes">Yes</option><option value="No">No</option><option value="N/A">N/A</option></select>
       </div>
     </div>
     <div class="photo-slots">
@@ -421,7 +422,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <span>I confirm all information entered is accurate to the best of my knowledge.</span>
       </label>
     </div>
-    <p style="font-size:13px;color:var(--muted);margin-top:0;">Packages every photo into the site/room folder structure from the design doc, plus two CSV files that match the "Sites Overview" and "Room Photos Detail" tabs in the tracker — so you can drop the folder into SharePoint/Egnyte and paste the CSV rows straight into the spreadsheet.</p>
+    <p style="font-size:13px;color:var(--muted);margin-top:0;">Creates a folder with all your photos and a summary spreadsheet, ready to upload to SharePoint or Egnyte.</p>
     <button class="export" id="exportBtn" type="button">⬇ Generate Export (.zip)</button>
     <div class="status" id="statusMsg"></div>
 
@@ -913,13 +914,13 @@ function annGetPos(e){
 function addRoom(){
   roomCounter++;
   const id = "room" + roomCounter;
-  rooms[id] = { type: ROOM_TYPES[0], name: "", notes: "", outletOk: "Yes", outletsNeeded: "No", photos: {wide:null, mount:null, power:null, other:null}, extraPhotos: [], _apis: {} };
+  rooms[id] = { type: "", name: "", notes: "", outletOk: "", outletsNeeded: "", photos: {wide:null, mount:null, power:null, other:null}, extraPhotos: [], _apis: {} };
 
   const wrap = document.createElement("div");
   wrap.className = "room-card";
   wrap.id = id;
 
-  const typeOptions = ROOM_TYPES.map(t=>`<option value="${t}">${t}</option>`).join("");
+  const typeOptions = '<option value="" selected disabled>Select...</option>' + ROOM_TYPES.map(t=>`<option value="${t}">${t}</option>`).join("");
   let slotsHtml = "";
   ROOM_PHOTO_SLOTS.forEach(slot=>{
     slotsHtml += `
@@ -950,10 +951,10 @@ function addRoom(){
       </div>
       <div class="grid">
         <div class="field"><label class="req">Outlet available within 6 ft of mounting area?</label>
-          <select class="rt-outlet"><option value="Yes">Yes</option><option value="No">No</option></select>
+          <select class="rt-outlet"><option value="" selected disabled>Select...</option><option value="Yes">Yes</option><option value="No">No</option></select>
         </div>
         <div class="field"><label>Additional Outlets Needed?</label>
-          <select class="rt-outlets-needed"><option value="No">No</option><option value="Yes">Yes</option></select>
+          <select class="rt-outlets-needed"><option value="" selected disabled>Select...</option><option value="No">No</option><option value="Yes">Yes</option></select>
         </div>
       </div>
       <p class="ada-note" style="display:none;">📏 <strong>Screen Mounting Height:</strong> 54" from the floor to the center of the screen. This height supports ADA accessibility for patients using wheelchairs.</p>
@@ -976,7 +977,7 @@ function addRoom(){
 
   function updateRoomSummary(){
     const nm = (rooms[id].name || "").trim();
-    wrap.querySelector(".room-summary").textContent = "— " + rooms[id].type + (nm ? ` (${nm})` : "");
+    wrap.querySelector(".room-summary").textContent = "— " + (rooms[id].type || "Select room type") + (nm ? ` (${nm})` : "");
   }
   updateRoomSummary();
   wrap.querySelector(".collapse-room-toggle").addEventListener("click", ()=>{
@@ -1191,6 +1192,11 @@ computeComplexity();
 function updateRoomBadge(){
   const n = Object.keys(rooms).length;
   document.getElementById("roomCountBadge").textContent = n + (n===1 ? " room" : " rooms");
+  // Renumber the visible "Room N" labels by current position, not the ever-incrementing internal
+  // counter, so deleting a room never leaves a gap like Room 1, Room 3.
+  document.querySelectorAll("#roomsContainer .room-card .room-title").forEach((el, i) => {
+    el.textContent = "Room " + (i + 1);
+  });
 }
 
 document.getElementById("addRoomBtn").addEventListener("click", addRoom);
@@ -1366,11 +1372,11 @@ document.getElementById("draftFileInput").addEventListener("change", async ()=>{
       addRoom();
       const id = "room" + roomCounter;
       const wrap = document.getElementById(id);
-      rooms[id].type = entry.type || ROOM_TYPES[0];
+      rooms[id].type = entry.type || "";
       rooms[id].name = entry.name || "";
       rooms[id].notes = entry.notes || "";
-      rooms[id].outletOk = entry.outletOk || "Yes";
-      rooms[id].outletsNeeded = entry.outletsNeeded || "No";
+      rooms[id].outletOk = entry.outletOk || "";
+      rooms[id].outletsNeeded = entry.outletsNeeded || "";
       wrap.querySelector(".rt-type").value = rooms[id].type;
       wrap.querySelector(".rt-name").value = rooms[id].name;
       wrap.querySelector(".rt-outlet").value = rooms[id].outletOk;
@@ -1378,7 +1384,7 @@ document.getElementById("draftFileInput").addEventListener("change", async ()=>{
       wrap.querySelector(".rt-notes").value = rooms[id].notes;
       wrap.querySelector(".ada-note").style.display = (rooms[id].type === "Exam Room") ? "block" : "none";
       const restoredName = (rooms[id].name || "").trim();
-      wrap.querySelector(".room-summary").textContent = "— " + rooms[id].type + (restoredName ? ` (${restoredName})` : "");
+      wrap.querySelector(".room-summary").textContent = "— " + (rooms[id].type || "Select room type") + (restoredName ? ` (${restoredName})` : "");
 
       for(const slot of ROOM_PHOTO_SLOTS){
         const path = entry.photos && entry.photos[slot.key];
@@ -1553,74 +1559,55 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
   const blankRoomFields = ["","","","","","","","",""];
   const mergedRows = roomRows.length ? roomRows.map(rr => [...siteFieldsRow, ...rr]) : [[...siteFieldsRow, ...blankRoomFields]];
 
-  // Survey Hand-Off: a short, skimmable field/value summary for whoever picks this site up
-  // next (install team, scheduling, etc.) -- not the full backend row, just the essentials.
-  const fullAddress = [
-    document.getElementById("street").value.trim(),
-    document.getElementById("suite").value.trim(),
-    [document.getElementById("city").value.trim(), document.getElementById("state").value.trim().toUpperCase()].filter(Boolean).join(", "),
-    document.getElementById("zip").value.trim(),
-  ].filter(Boolean).join(", ");
-
-  let networkSummary = netTypeVal;
-  if(netTypeVal === "Wi-Fi") networkSummary += ` (SSID: ${ssidVal || "-"}, Captive Portal: ${captivePortalVal || "-"})`;
-  else if(netTypeVal === "Cradlepoint (Cellular)") networkSummary += ` (Carrier: ${carrierVal || "-"})`;
-  else if(netTypeVal === "Wired (Ethernet)") networkSummary += ` (Data Closet Access: ${dataClosetVal || "-"})`;
-
-  const handoffHeader = ["Location ID", "Location Name", "Office Hours", "Address",
-    "POC Name", "POC Title / Role", "POC Email", "POC Phone",
-    "Best Install Day(s)", "Best Install Time", "Proposed Install Date",
-    "Network Connectivity", "Number of Screens Needed", "Case Complexity", "Complexity Factors"];
-  const handoffValues = [
-    document.getElementById("locId").value.trim(), locName,
-    document.getElementById("officeHours").value.trim(), fullAddress,
-    document.getElementById("pocName").value.trim(), document.getElementById("pocTitle").value.trim(),
-    document.getElementById("pocEmail").value.trim(), document.getElementById("pocPhone").value.trim(),
-    document.getElementById("bestDay").value.trim(), document.getElementById("bestTime").value,
-    document.getElementById("installDate").value || "",
-    networkSummary, roomIds.length, complexity.result, complexityFactorsStr,
+  // Five focused tabs instead of one wide single-row summary: General Info, Rooms, Network,
+  // and Complexity are each easy to scan on their own (no side-scrolling through 40+ columns);
+  // "All Combined" is the same full per-room feed as before, unchanged, still matching the
+  // tracker's Sites Overview tab 1:1 for pasting.
+  const generalInfoHeader = ["Location ID","Location Name","Street Address","Suite / Unit","City","State","ZIP",
+    "Office Hours","Best Install Day(s)","Best Install Time","Survey Date","Proposed Install Date",
+    "POC Name","POC Title / Role","POC Email","POC Phone",
+    "Surveyor Name","Surveyor Company / Organization","Surveyor Email","Surveyor Phone",
+    "Exam Room Count","Waiting Room Count","Break Room / Back Office Count",
+    "Site Photo Folder","Company","Submission Timestamp","Map Link","Signature Confirmed"];
+  const generalInfoRow = [
+    siteFieldsRow[0], siteFieldsRow[1], siteFieldsRow[2], siteFieldsRow[3], siteFieldsRow[4], siteFieldsRow[5], siteFieldsRow[6],
+    siteFieldsRow[7], siteFieldsRow[8], siteFieldsRow[9], siteFieldsRow[10], siteFieldsRow[11],
+    siteFieldsRow[12], siteFieldsRow[13], siteFieldsRow[14], siteFieldsRow[15],
+    siteFieldsRow[16], siteFieldsRow[17], siteFieldsRow[18], siteFieldsRow[19],
+    siteFieldsRow[20], siteFieldsRow[21], siteFieldsRow[22],
+    siteFieldsRow[34], siteFieldsRow[35], siteFieldsRow[36], siteFieldsRow[37], siteFieldsRow[38],
   ];
-  // One polished workbook instead of two loose CSVs: "Hand-Off Summary" (one quick-glance row)
-  // and "Room Details" (the full per-room backend feed), each with a styled header row.
+
+  const roomsHeader = ["Location ID","Room Type","Room Name / Number","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed",
+    "Wide Shot Photo","Mounting Wall & Ceiling Photo","Power Requirements Photo","Other Details Photo","Room Notes"];
+  const roomsRows = roomRows.length
+    ? roomRows.map(rr => [siteFieldsRow[0], ...rr])
+    : [[siteFieldsRow[0], ...blankRoomFields]];
+
+  const networkHeader = ["Network Type","Wi-Fi SSID","Wi-Fi Password","Captive Portal on Network","Speed Test Results",
+    "Speed Test Screenshot","Best Carrier","Data Closet Access","Signal Strength Photo","Optional Attachments Photo","Additional Notes"];
+  const networkRow = siteFieldsRow.slice(23, 34);
+
+  // Only show what's actually applicable to this site -- the overall result, plus whichever
+  // factors were actually checked. Nothing is listed for factors that don't apply here.
+  const CF_TIER_LABELS = { hard: "Hard Stop", soft: "Soft Flag", blocked: "Blocked" };
+  const checkedFactorRows = Array.from(document.querySelectorAll(".cf-check:checked"))
+    .map(cb => [cb.value, CF_TIER_LABELS[cb.dataset.tier] || cb.dataset.tier]);
+  const complexityHeader = ["Complexity Factor", "Tier"];
+  const complexityRows = [
+    ["Case Complexity", complexity.result],
+    ...(checkedFactorRows.length ? checkedFactorRows : [["No complexity factors triggered", ""]]),
+  ];
+
   const summaryWorkbookZip = await buildStyledWorkbook([
-    { name: "Hand-Off Summary", headers: handoffHeader, rows: [handoffValues] },
-    { name: "Room Details", headers: mergedHeader, rows: mergedRows, freezeCols: 2 },
+    { name: "General Info", headers: generalInfoHeader, rows: [generalInfoRow] },
+    { name: "Rooms", headers: roomsHeader, rows: roomsRows },
+    { name: "Network", headers: networkHeader, rows: [networkRow] },
+    { name: "Complexity", headers: complexityHeader, rows: complexityRows },
+    { name: "All Combined", headers: mergedHeader, rows: mergedRows, freezeCols: 2 },
   ], JSZip);
   const summaryWorkbookBlob = await summaryWorkbookZip.generateAsync({ type: "blob" });
   zip.file("Site Survey Summary.xlsx", summaryWorkbookBlob);
-
-  const readme = `PatientPoint Site Survey Export
-Location: ${locName}
-Survey date: ${surveyDate}
-Rooms captured: ${roomIds.length}
-Case Complexity: ${complexity.result}${complexity.result !== "Simple" ? " -- discussion required with IM/Sales leadership before communicating any outcome to the customer." : ""}
-
-HOW TO USE THIS EXPORT
-1. Drag the "${siteFolder}" folder into the correct SharePoint (internal) or Egnyte (external)
-   Site Surveys library, exactly as-is. Do not rename it -- the file paths in the CSV below
-   assume this folder name and structure.
-2. Open "Site Survey Summary.xlsx" -- it has two tabs:
-   - "Hand-Off Summary": one quick-glance row (Location ID/Name, office hours, address, POC
-     contacts, install schedule, network connectivity, number of screens needed, and case
-     complexity) for whoever picks this site up next (install team, scheduling, etc.).
-   - "Room Details": one row per room (or one row total if no rooms were documented yet) --
-     this is the tab to paste into Site Survey Backend Tracker.xlsx.
-3. Open Site Survey Backend Tracker.xlsx, go to the "Sites Overview" tab, and paste each row
-   from "Room Details" as a new row there. Leave the Exam/Waiting/Break Room Count and Map
-   Link columns alone -- they're formulas and fill in on their own. There's also a hidden
-   helper column at the far right (used by the Dashboard) -- leave that alone too. If you
-   paste beyond the pre-built formula rows, copy those formula cells down from the row above
-   into your new rows.
-4. The photo columns currently contain the relative file path within this export (e.g.
-   "${siteFolder}/Exam Room - Exam Room 1/ExamRoom1_WideShot.jpg"), not a clickable link yet.
-   Once the folder is uploaded, replace each of those cells with:
-   =HYPERLINK("<real SharePoint or Egnyte link to that file>","View Photo")
-   (See Section 7 of the design doc for the folder/file naming convention this export follows.)
-5. Any additional photos added beyond the 4 required ones are saved in each room's folder as
-   "<RoomName>_Extra1.jpg", "_Extra2.jpg", etc. -- they aren't itemized as separate columns in
-   the tracker, just kept alongside the required photos for reference.
-`;
-  zip.file("README.txt", readme);
 
   const blob = await zip.generateAsync({type:"blob"});
   const url = URL.createObjectURL(blob);
