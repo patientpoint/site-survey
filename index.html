@@ -81,6 +81,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .submit-box{margin-top:16px;padding:14px 16px;border:1px solid var(--gold);background:#fff8e6;border-radius:8px;}
   .submit-box p{margin:0 0 8px;font-size:13px;color:var(--text);}
   .submit-box p.ext-note{margin-top:10px;color:var(--muted);font-size:12px;}
+  .hint-note{color:var(--muted);font-size:12px;margin:8px 0 14px;}
+  button.export.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
+  button.export.secondary:hover{background:#f0f6f8;}
   .submit-link{display:inline-block;background:var(--gold);color:#ffffff;font-weight:bold;padding:10px 16px;border-radius:6px;text-decoration:none;font-size:14px;margin:4px 8px 4px 0;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
   .submit-link:hover{background:var(--accent-light);}
   .submit-link.disabled{background:#dbe2e8;color:#8a97a3;pointer-events:none;filter:grayscale(40%);}
@@ -422,12 +425,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <span>I confirm all information entered is accurate to the best of my knowledge.</span>
       </label>
     </div>
-    <p style="font-size:13px;color:var(--muted);margin-top:0;">Creates a folder with all your photos and a summary spreadsheet, ready to upload to SharePoint or Egnyte.</p>
-    <button class="export" id="exportBtn" type="button">⬇ Generate Export (.zip)</button>
+    <p style="font-size:13px;color:var(--muted);margin-top:0;">Packages your photos and a summary spreadsheet automatically into a folder named for this site.</p>
+    <button class="export" id="autoSubmitBtn" type="button">✅ Submit (Auto-Save to Folder)</button>
+    <p class="hint-note" id="autoSubmitNote">First time: pick your local SharePoint/OneDrive-synced submissions folder once. After that, Submit saves straight into it as its own subfolder — no download, no re-uploading. Desktop Chrome or Edge only, and that folder must already be synced via OneDrive (or Egnyte Desktop) on this computer.</p>
     <div class="status" id="statusMsg"></div>
 
     <div class="submit-box">
-      <p><strong>Step 2 — Submit it:</strong> after the .zip downloads, upload it to the shared folder below so it lands in the backend automatically.</p>
+      <p><strong>On a phone, a different browser, or submitting as an external vendor?</strong> Download the package and upload it yourself instead:</p>
+      <button class="export secondary" id="exportBtn" type="button" style="margin-bottom:10px;">⬇ Download Locally (.zip)</button>
       <a class="submit-link" id="sharepointLink" href="https://patientpoint365.sharepoint.com/:f:/s/ImplementationFileShareEnvironment/IgDXXg5aKwRrQIa_CG-cBnhrAS3jIP379jzWpt6Jsxc36Yo?e=t9Aim1" target="_blank" rel="noopener">📤 Upload to PatientPoint SharePoint</a>
       <a class="submit-link egnyte" id="egnyteLink" href="#" target="_blank" rel="noopener">📤 Upload to Egnyte</a>
       <p class="ext-note" id="submitNote"></p>
@@ -1433,7 +1438,12 @@ function csvEscape(v){
 }
 function csvRow(arr){ return arr.map(csvEscape).join(",") + "\r\n"; }
 
-document.getElementById("exportBtn").addEventListener("click", async ()=>{
+// Builds every file that a submission needs (room/network photos + the summary workbook) as a
+// flat list of {path, blob} entries relative to the site's folder, without deciding yet whether
+// they go into a downloaded .zip or straight onto disk via the File System Access API -- both
+// "Download Locally" and "Submit (Auto-Save to Folder)" share this one builder so the underlying
+// data is always identical no matter which path the user takes.
+async function buildSubmissionPackage(){
   const statusEl = document.getElementById("statusMsg");
   statusEl.className = "status";
   statusEl.textContent = "Building export…";
@@ -1444,17 +1454,19 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
   if(!locId || !locName || !surveyDate){
     statusEl.className = "status warn";
     statusEl.textContent = "Please fill in Location ID, Location Name, and Survey Date before exporting -- Location ID is what keeps every site's files distinct once hundreds of these land in the same folder.";
-    return;
+    return null;
   }
   if(!document.getElementById("signatureConfirm").checked){
     statusEl.className = "status warn";
     statusEl.textContent = "Please check the sign-off confirmation before exporting.";
-    return;
+    return null;
   }
 
   const siteFolder = buildSiteLabel();
-  const zip = new JSZip();
-  const root = zip.folder(siteFolder);
+  // Folder name for the auto-save-to-disk feature: "<Location ID> - <Location Name>", no survey
+  // date, per the naming convention requested for direct SharePoint subfolders.
+  const submitFolderName = locId ? `${safeName(locId)} - ${safeName(locName)}` : safeName(locName);
+  const files = []; // { path: "relative/within/site/folder.ext", blob }
 
   const roomIds = Object.keys(rooms);
   const roomRows = [];
@@ -1464,7 +1476,6 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
     const r = rooms[id];
     const roomName = r.name || r.type;
     const roomFolderName = `${r.type} - ${safeName(roomName)}`;
-    const roomFolder = root.folder(roomFolderName);
     const roomNamePrefix = safeName(roomName).replace(/\s+/g,"");
 
     const photoPaths = {};
@@ -1472,7 +1483,7 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
       const file = r.photos[slot.key];
       if(file){
         const fname = `${roomNamePrefix}_${slot.suffix}.${ext(file)}`;
-        roomFolder.file(fname, file);
+        files.push({ path: `${roomFolderName}/${fname}`, blob: file });
         photoPaths[slot.key] = `${siteFolder}/${roomFolderName}/${fname}`;
       } else {
         photoPaths[slot.key] = "";
@@ -1484,7 +1495,7 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
       if(!file) return;
       extraCount++;
       const fname = `${roomNamePrefix}_Extra${extraCount}.${ext(file)}`;
-      roomFolder.file(fname, file);
+      files.push({ path: `${roomFolderName}/${fname}`, blob: file });
     });
 
     if(r.type === "Exam Room") examCount++;
@@ -1498,17 +1509,17 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
   let signalPath = "", optionalPath = "", speedTestPhotoPath = "";
   if(networkPhotos.signal){
     const fname = `Network_SignalStrength.${ext(networkPhotos.signal)}`;
-    root.file(fname, networkPhotos.signal);
+    files.push({ path: fname, blob: networkPhotos.signal });
     signalPath = `${siteFolder}/${fname}`;
   }
   if(networkPhotos.optional){
     const fname = `Network_OptionalAttachment.${ext(networkPhotos.optional)}`;
-    root.file(fname, networkPhotos.optional);
+    files.push({ path: fname, blob: networkPhotos.optional });
     optionalPath = `${siteFolder}/${fname}`;
   }
   if(networkPhotos.speedtest){
     const fname = `Network_SpeedTestScreenshot.${ext(networkPhotos.speedtest)}`;
-    root.file(fname, networkPhotos.speedtest);
+    files.push({ path: fname, blob: networkPhotos.speedtest });
     speedTestPhotoPath = `${siteFolder}/${fname}`;
   }
 
@@ -1607,20 +1618,146 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
     { name: "All Combined", headers: mergedHeader, rows: mergedRows, freezeCols: 2 },
   ], JSZip);
   const summaryWorkbookBlob = await summaryWorkbookZip.generateAsync({ type: "blob" });
-  zip.file("Site Survey Summary.xlsx", summaryWorkbookBlob);
+  files.push({ path: "Site Survey Summary.xlsx", blob: summaryWorkbookBlob });
 
+  const survNameForFile = safeName(document.getElementById("survName").value.trim()) || "Unknown Surveyor";
+  statusEl.textContent = "";
+  return { siteFolder, submitFolderName, survNameForFile, roomCount: roomIds.length, files };
+}
+
+document.getElementById("exportBtn").addEventListener("click", async ()=>{
+  const statusEl = document.getElementById("statusMsg");
+  const pkg = await buildSubmissionPackage();
+  if(!pkg) return;
+
+  const zip = new JSZip();
+  pkg.files.forEach(f => zip.file(`${pkg.siteFolder}/${f.path}`, f.blob));
   const blob = await zip.generateAsync({type:"blob"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  const survNameForFile = safeName(document.getElementById("survName").value.trim()) || "Unknown Surveyor";
-  a.download = `${siteFolder} - ${survNameForFile} - Site Survey Export.zip`;
+  a.download = `${pkg.siteFolder} - ${pkg.survNameForFile} - Site Survey Export.zip`;
   document.body.appendChild(a);
   a.click();
   a.remove();
 
   statusEl.className = "status ok";
-  statusEl.textContent = `Done — exported ${roomIds.length} room(s). Check your downloads for "${a.download}".`;
+  statusEl.textContent = `Done — exported ${pkg.roomCount} room(s). Check your downloads for "${a.download}".`;
+});
+
+// ---- Submit (Auto-Save to Folder): uses the File System Access API to write the same package
+// straight into a subfolder of a local folder the user picks once (ideally a OneDrive/Egnyte
+// Desktop-synced folder, so it lands in SharePoint/Egnyte automatically within moments). The
+// folder handle is remembered in IndexedDB so it doesn't need to be re-picked every visit.
+// Chrome/Edge on desktop only -- not available on Safari, Firefox, or mobile browsers.
+let submitFolderHandle = null;
+
+function idbOpen(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open("site-survey-app", 1);
+    req.onupgradeneeded = ()=> req.result.createObjectStore("handles");
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbSet(key, val){
+  const db = await idbOpen();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction("handles", "readwrite");
+    tx.objectStore("handles").put(val, key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function idbGet(key){
+  const db = await idbOpen();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction("handles", "readonly");
+    const req = tx.objectStore("handles").get(key);
+    req.onsuccess = ()=> resolve(req.result || null);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function verifyPermission(handle, requestIfNeeded){
+  const opts = { mode: "readwrite" };
+  try{
+    if((await handle.queryPermission(opts)) === "granted") return true;
+    if(requestIfNeeded && (await handle.requestPermission(opts)) === "granted") return true;
+  }catch(e){ /* handle may be stale (folder moved/deleted) -- fall through to false */ }
+  return false;
+}
+async function writeFileToDirHandle(rootHandle, relativePath, blob){
+  const parts = relativePath.split("/");
+  let dir = rootHandle;
+  for(let i=0; i<parts.length-1; i++){
+    dir = await dir.getDirectoryHandle(parts[i], { create: true });
+  }
+  const fileHandle = await dir.getFileHandle(parts[parts.length-1], { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+const autoSubmitBtn = document.getElementById("autoSubmitBtn");
+const autoSubmitNote = document.getElementById("autoSubmitNote");
+
+if(!("showDirectoryPicker" in window)){
+  autoSubmitBtn.disabled = true;
+  autoSubmitBtn.textContent = "✅ Auto-Submit (needs Chrome or Edge on a computer)";
+  autoSubmitNote.textContent = "Auto-submit isn't available in this browser or on phones — use \"Download Locally\" and the upload buttons below instead.";
+} else {
+  idbGet("submitFolderHandle").then(async stored=>{
+    if(stored && await verifyPermission(stored, false)){
+      submitFolderHandle = stored;
+      autoSubmitBtn.textContent = `✅ Submit (Auto-Save to "${stored.name}")`;
+    }
+  }).catch(()=>{});
+}
+
+autoSubmitBtn.addEventListener("click", async ()=>{
+  const statusEl = document.getElementById("statusMsg");
+  statusEl.className = "status";
+  statusEl.textContent = "";
+
+  // Resolve (or ask for) the destination folder FIRST, before any other awaited work, so the
+  // permission/picker prompts still happen inside the click's user-activation window.
+  let dirHandle = submitFolderHandle;
+  if(dirHandle && !(await verifyPermission(dirHandle, true))) dirHandle = null;
+  if(!dirHandle){
+    const stored = await idbGet("submitFolderHandle").catch(()=>null);
+    if(stored && await verifyPermission(stored, true)) dirHandle = stored;
+  }
+  if(!dirHandle){
+    try{
+      dirHandle = await window.showDirectoryPicker({ id: "site-survey-submissions", mode: "readwrite" });
+    }catch(e){
+      if(e.name !== "AbortError"){
+        statusEl.className = "status warn";
+        statusEl.textContent = "Couldn't open the folder picker: " + e.message;
+      }
+      return;
+    }
+    idbSet("submitFolderHandle", dirHandle).catch(()=>{});
+  }
+  submitFolderHandle = dirHandle;
+  autoSubmitBtn.textContent = `✅ Submit (Auto-Save to "${dirHandle.name}")`;
+
+  const pkg = await buildSubmissionPackage();
+  if(!pkg) return;
+
+  statusEl.className = "status";
+  statusEl.textContent = "Saving directly to your synced folder…";
+  try{
+    const siteDirHandle = await dirHandle.getDirectoryHandle(pkg.submitFolderName, { create: true });
+    for(const f of pkg.files){
+      await writeFileToDirHandle(siteDirHandle, f.path, f.blob);
+    }
+    statusEl.className = "status ok";
+    statusEl.textContent = `Submitted — saved "${pkg.submitFolderName}" (${pkg.roomCount} room(s)) directly into your selected folder. It syncs to SharePoint/Egnyte automatically.`;
+  }catch(e){
+    statusEl.className = "status warn";
+    statusEl.textContent = `Couldn't save automatically (${e.message}). Use "Download Locally" below and upload it manually instead.`;
+  }
 });
 </script>
 
