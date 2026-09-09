@@ -27,7 +27,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   *{box-sizing:border-box;}
   body{margin:0;padding-bottom:62px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
-  header{background:linear-gradient(135deg,var(--navy),var(--navy-dark));color:#fff;padding:18px 20px;position:sticky;top:0;z-index:10;border-bottom:3px solid var(--gold);box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy-dark));color:#fff;padding:16px 20px;position:sticky;top:0;z-index:10;border-bottom:3px solid var(--gold);box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px 16px;}
+  .header-brand{flex:1 1 220px;min-width:200px;}
+  .header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto;}
+  .header-actions-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center;}
+  #draftHelpText{flex-basis:100%;}
+  @media (max-width:600px){
+    .header-actions{align-items:flex-start;width:100%;}
+    .header-actions-row{justify-content:flex-start;width:100%;}
+    .header-actions-row .header-btn{flex:1 1 auto;text-align:center;}
+  }
   header h1{margin:0;font-size:21px;font-weight:800;letter-spacing:-0.01em;}
   header h1 .brand-accent{color:var(--accent-light);}
   header h1 .brand-tag{font-weight:400;font-size:13px;color:rgba(255,255,255,0.82);margin-left:8px;letter-spacing:0.02em;}
@@ -78,18 +87,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   button.add-room:hover{background:var(--accent-light);}
   button.export{background:var(--navy);color:#fff;border:none;padding:13px 22px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;width:100%;}
   button.export:hover{background:var(--navy-dark);}
-  .submit-box{margin-top:16px;padding:14px 16px;border:1px solid var(--gold);background:#fff8e6;border-radius:8px;}
+  .step-box{padding:14px 16px;border:1px solid var(--border);background:#f7fafc;border-radius:8px;width:100%;margin:0 0 20px;text-align:center;}
+  .step-box .status{text-align:left;}
+  .submit-box{margin:16px 0 0;padding:14px 16px;border:1px solid var(--gold);background:#fff8e6;border-radius:8px;width:100%;text-align:center;}
   .submit-box p{margin:0 0 8px;font-size:13px;color:var(--text);}
   .submit-box p.ext-note{margin-top:10px;color:var(--muted);font-size:12px;}
   .hint-note{color:var(--muted);font-size:12px;margin:8px 0 14px;}
+  .link-toggle{background:none;border:none;color:var(--navy);text-decoration:underline;font-size:12px;cursor:pointer;padding:8px 0 0;display:block;margin:0 auto;}
+  .link-toggle-light{background:none;border:none;color:#cdeaf0;text-decoration:underline;font-size:12px;cursor:pointer;padding:6px 0 0;}
   button.export.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
   button.export.secondary:hover{background:#f0f6f8;}
-  .submit-link{display:inline-block;background:var(--gold);color:#ffffff;font-weight:bold;padding:10px 16px;border-radius:6px;text-decoration:none;font-size:14px;margin:4px 8px 4px 0;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
+  .submit-link{display:block;width:100%;box-sizing:border-box;background:var(--gold);color:#fff;font-weight:bold;padding:13px 22px;border-radius:8px;text-decoration:none;font-size:15px;text-align:center;}
   .submit-link:hover{background:var(--accent-light);}
   .submit-link.disabled{background:#dbe2e8;color:#8a97a3;pointer-events:none;filter:grayscale(40%);}
-  .submit-link.egnyte{background:#1F4E78;color:#fff;}
-  .submit-link.egnyte:hover{background:#163a5c;}
-  .submit-link.egnyte.disabled{background:#dbe2e8;color:#8a97a3;}
   .cf-group{margin-bottom:16px;}
   .cf-group-title{font-size:13px;color:var(--navy-dark);margin:0 0 8px;}
   .cf-group-note{font-weight:normal;color:var(--muted);font-size:12px;}
@@ -207,17 +217,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body>
 
 <header>
-  <h1>Patient<span class="brand-accent">Point</span><span class="brand-tag">Site Survey</span></h1>
-  <p>Fill in site info, add a card per room, snap or upload the required photos, then export.</p>
-  <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-    <button id="saveDraftBtn" type="button" class="header-btn">💾 Save Draft</button>
-    <button id="loadDraftBtn" type="button" class="header-btn">📂 Resume from Draft</button>
-    <button id="autoSaveBtn" type="button" class="header-btn">🔄 Auto-Save to Folder</button>
-    <input type="file" id="draftFileInput" accept=".zip" style="display:none;">
-    <span id="draftStatus" style="font-size:12px;color:#cdeaf0;"></span>
+  <div class="header-brand">
+    <h1>Patient<span class="brand-accent">Point</span><span class="brand-tag">Site Survey Form</span></h1>
+    <p>Fill in the site info and room details, upload the required photos, and export.</p>
   </div>
-  <div style="margin-top:4px;">
-    <span id="autoSaveStatus" style="font-size:12px;color:#cdeaf0;"></span>
+  <div class="header-actions">
+    <div class="header-actions-row">
+      <button id="saveDraftBtn" type="button" class="header-btn">💾 Save Draft</button>
+      <button id="loadDraftBtn" type="button" class="header-btn">📂 Resume from Draft</button>
+      <input type="file" id="draftFileInput" accept=".zip" style="display:none;">
+    </div>
+    <span id="draftStatus" style="font-size:12px;color:#cdeaf0;"></span>
+    <button type="button" id="draftHelpToggle" class="link-toggle-light">ℹ️ What do these buttons do?</button>
+  </div>
+  <div id="draftHelpText" style="display:none;font-size:12px;color:#cdeaf0;max-width:420px;margin-top:2px;line-height:1.5;">
+    <strong>💾 Save Draft</strong> saves everything you've filled in so far so you don't lose it if you close the tab. On a computer with Chrome or Edge, it can keep auto-saving as you work after the first click; on a phone or other browsers, it downloads a fresh snapshot each time you tap it.<br><br>
+    <strong>📂 Resume from Draft</strong> lets you pick a previously saved draft file and fills the form back in exactly where you left off.
   </div>
 </header>
 
@@ -425,16 +440,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <span>I confirm all information entered is accurate to the best of my knowledge.</span>
       </label>
     </div>
-    <p style="font-size:13px;color:var(--muted);margin-top:0;">Packages your photos and a summary spreadsheet automatically into a folder named for this site.</p>
-    <button class="export" id="autoSubmitBtn" type="button">✅ Submit (Auto-Save to Folder)</button>
-    <p class="hint-note" id="autoSubmitNote">First time: pick your local SharePoint/OneDrive-synced submissions folder once. After that, Submit saves straight into it as its own subfolder — no download, no re-uploading. Desktop Chrome or Edge only, and that folder must already be synced via OneDrive (or Egnyte Desktop) on this computer.</p>
-    <div class="status" id="statusMsg"></div>
+    <div class="step-box">
+      <p style="font-size:13px;color:var(--muted);margin-top:0;"><strong>Step 1 — Export:</strong> packages your photos and a summary spreadsheet automatically into a folder named for this site.</p>
+      <button class="export" id="exportBtn" type="button">⬇ Step 1: Generate Export (.zip)</button>
+      <div class="status" id="statusMsg"></div>
+      <button type="button" id="downloadHelpToggle" class="link-toggle">📱 Can't find the downloaded file?</button>
+      <div id="downloadHelpText" class="hint-note" style="display:none;text-align:left;">
+        <strong>iPhone:</strong> open the <strong>Files</strong> app → <strong>On My iPhone</strong> → <strong>Downloads</strong> (or tap the ⬇ download icon in Safari's toolbar to jump straight to it).<br><br>
+        <strong>Android:</strong> open the <strong>Files</strong> app → <strong>Downloads</strong>, or swipe down your notification shade and tap the "Download complete" notification to open it directly.
+      </div>
+    </div>
 
     <div class="submit-box">
-      <p><strong>On a phone, a different browser, or submitting as an external vendor?</strong> Download the package and upload it yourself instead:</p>
-      <button class="export secondary" id="exportBtn" type="button" style="margin-bottom:10px;">⬇ Download Locally (.zip)</button>
-      <a class="submit-link" id="sharepointLink" href="https://patientpoint365.sharepoint.com/:f:/s/ImplementationFileShareEnvironment/IgDXXg5aKwRrQIa_CG-cBnhrAS3jIP379jzWpt6Jsxc36Yo?e=t9Aim1" target="_blank" rel="noopener">📤 Upload to PatientPoint SharePoint</a>
-      <a class="submit-link egnyte" id="egnyteLink" href="#" target="_blank" rel="noopener">📤 Upload to Egnyte</a>
+      <p><strong>Step 2:</strong> Upload the downloaded .zip to the PatientPoint File Share Environment below.</p>
+      <a class="submit-link" id="sharepointLink" href="https://patientpoint365.sharepoint.com/:f:/s/ImplementationFileShareEnvironment/IgDXXg5aKwRrQIa_CG-cBnhrAS3jIP379jzWpt6Jsxc36Yo?e=t9Aim1" target="_blank" rel="noopener">📤 Step 2: Upload to PatientPoint File Share Environment</a>
       <p class="ext-note" id="submitNote"></p>
     </div>
   </section>
@@ -479,7 +498,6 @@ const ROOM_PHOTO_SLOTS = [
   {key:"wide",   label:"Wide shot of entire room",              required:true,  suffix:"WideShot"},
   {key:"mount",  label:"Device mounting wall & ceiling",         required:true,  suffix:"MountingWall"},
   {key:"power",  label:"Power requirements (outlet close-up)",   required:true,  suffix:"Power"},
-  {key:"other",  label:"Other relevant details (optional)",      required:false, suffix:"Other"},
 ];
 
 let roomCounter = 0;
@@ -578,6 +596,13 @@ const US_STATE_ABBR = {
   "washington":"WA","west virginia":"WV","wisconsin":"WI","wyoming":"WY",
 };
 
+// Paste a free Geoapify API key here (myprojects.geoapify.com -> create project -> API Keys) to
+// upgrade address suggestions from the free OpenStreetMap lookup to Geoapify's more accurate
+// Address Autocomplete API. Leave it blank and everything keeps working exactly as it does today
+// -- OpenStreetMap is used automatically as a fallback whenever no key is set, or if Geoapify's
+// call fails for any reason (rate limit, network block, bad key, etc).
+const GEOAPIFY_API_KEY = "";
+
 const streetInput = document.getElementById("street");
 const suggBox = document.getElementById("addressSuggestions");
 let addrDebounce, addrAbort;
@@ -595,14 +620,61 @@ document.addEventListener("click", (e)=>{
 
 function hideSuggestions(){ suggBox.style.display = "none"; suggBox.innerHTML = ""; }
 
+// Normalizes either source's result shape into one common shape used by render/apply below, so
+// the rest of the code doesn't need to know or care which service actually answered.
+function normalizeGeoapify(r){
+  return {
+    display: r.formatted || [r.address_line1, r.address_line2].filter(Boolean).join(", "),
+    street: [r.housenumber, r.street].filter(Boolean).join(" "),
+    city: r.city || "",
+    state: r.state_code || r.state || "",
+    zip: r.postcode || "",
+  };
+}
+function normalizeNominatim(r){
+  const a = r.address || {};
+  const stateName = (a.state || "").toLowerCase();
+  return {
+    display: r.display_name || "",
+    street: [a.house_number, a.road || a.pedestrian || a.residential].filter(Boolean).join(" "),
+    city: a.city || a.town || a.village || a.hamlet || a.county || "",
+    state: US_STATE_ABBR[stateName] || (a.state || "").slice(0,2).toUpperCase(),
+    zip: a.postcode || "",
+  };
+}
+
+async function fetchFromGeoapify(q, signal){
+  const url = "https://api.geoapify.com/v1/geocode/autocomplete?format=json&limit=5&filter=countrycode:us&text="
+    + encodeURIComponent(q) + "&apiKey=" + encodeURIComponent(GEOAPIFY_API_KEY);
+  const res = await fetch(url, { signal });
+  if(!res.ok) throw new Error("geoapify lookup failed");
+  const data = await res.json();
+  return (data.results || []).map(normalizeGeoapify);
+}
+async function fetchFromNominatim(q, signal){
+  const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=us&limit=5&q=" + encodeURIComponent(q);
+  const res = await fetch(url, { headers: { "Accept": "application/json" }, signal });
+  if(!res.ok) throw new Error("nominatim lookup failed");
+  const results = await res.json();
+  return results.map(normalizeNominatim);
+}
+
 async function fetchAddressSuggestions(q){
   if(addrAbort) addrAbort.abort();
   addrAbort = new AbortController();
+  const signal = addrAbort.signal;
   try{
-    const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=us&limit=5&q=" + encodeURIComponent(q);
-    const res = await fetch(url, { headers: { "Accept": "application/json" }, signal: addrAbort.signal });
-    if(!res.ok) throw new Error("lookup failed");
-    const results = await res.json();
+    let results = [];
+    if(GEOAPIFY_API_KEY){
+      try{
+        results = await fetchFromGeoapify(q, signal);
+      }catch(e){
+        if(e.name === "AbortError") return;
+        results = await fetchFromNominatim(q, signal); // fall back silently
+      }
+    } else {
+      results = await fetchFromNominatim(q, signal);
+    }
     renderSuggestions(results);
   }catch(e){
     if(e.name !== "AbortError") hideSuggestions();
@@ -611,7 +683,7 @@ async function fetchAddressSuggestions(q){
 
 function renderSuggestions(results){
   if(!results.length){ hideSuggestions(); return; }
-  suggBox.innerHTML = results.map((r,i)=>`<div data-i="${i}">${r.display_name}</div>`).join("");
+  suggBox.innerHTML = results.map((r,i)=>`<div data-i="${i}">${r.display}</div>`).join("");
   suggBox.style.display = "block";
   suggBox.querySelectorAll("div").forEach((el,i)=>{
     el.addEventListener("click", ()=> applySuggestion(results[i]));
@@ -619,26 +691,19 @@ function renderSuggestions(results){
 }
 
 function applySuggestion(r){
-  const a = r.address || {};
-  const houseNumber = a.house_number || "";
-  const road = a.road || a.pedestrian || a.residential || "";
-  document.getElementById("street").value = (houseNumber ? houseNumber + " " : "") + road;
-  document.getElementById("city").value = a.city || a.town || a.village || a.hamlet || a.county || "";
-  const stateName = (a.state || "").toLowerCase();
-  document.getElementById("state").value = US_STATE_ABBR[stateName] || (a.state || "").slice(0,2).toUpperCase();
-  document.getElementById("zip").value = a.postcode || "";
+  document.getElementById("street").value = r.street;
+  document.getElementById("city").value = r.city;
+  document.getElementById("state").value = r.state;
+  document.getElementById("zip").value = r.zip;
   hideSuggestions();
   updateMapLink();
 }
 
-// --- Company (Internal/External) drives: whether Surveyor Company is shown/needed, and
-// which submit link (SharePoint vs Egnyte) is active. ---
-const EGNYTE_UPLOAD_URL = "https://patientpoint.egnyte.com/fl/JJqbYGQCRJ98";
+// --- Company (Internal/External) drives whether Surveyor Company is shown/needed. Everyone
+// uses the same File Share Environment link now, so there's no destination-switching logic left. ---
 const sourceEl = document.getElementById("source");
 const survCompanyField = document.getElementById("survCompanyField");
 const survCompanyInput = document.getElementById("survCompany");
-const sharepointLink = document.getElementById("sharepointLink");
-const egnyteLink = document.getElementById("egnyteLink");
 const submitNote = document.getElementById("submitNote");
 
 function updateCompanyDependentFields(){
@@ -653,22 +718,7 @@ function updateCompanyDependentFields(){
     survCompanyInput.value = "";
   }
 
-  // Nothing chosen yet -- don't assume either way, keep both destinations locked until they pick.
-  if(!val){
-    sharepointLink.classList.add("disabled");
-    egnyteLink.classList.add("disabled");
-    submitNote.textContent = "Select Internal or External above to unlock the correct upload link.";
-    return;
-  }
-
-  // Internal can use either destination; External only has Egnyte (no PatientPoint SharePoint access).
-  sharepointLink.classList.toggle("disabled", !isInternal);
-  egnyteLink.classList.remove("disabled");
-  egnyteLink.href = EGNYTE_UPLOAD_URL;
-
-  submitNote.textContent = isInternal
-    ? "Internal (PatientPoint employee): use either button above — SharePoint or Egnyte both work."
-    : "External (site/vendor): use the Egnyte button above — you won't have access to the PatientPoint SharePoint link, so it's grayed out.";
+  submitNote.textContent = "";
 }
 sourceEl.addEventListener("change", updateCompanyDependentFields);
 updateCompanyDependentFields();
@@ -1230,6 +1280,24 @@ function setDraftStatus(msg, isError){
   el.style.color = isError ? "#ffb4a8" : "#dbe9f7";
 }
 
+// --- Warn before leaving with unsaved changes ---
+// Any input/change anywhere in the form (text fields, dropdowns, checkboxes, room fields, photo
+// uploads -- all of it, via event delegation so newly-added rooms are covered automatically)
+// marks the form dirty. Saving a draft, auto-saving, resuming a draft, or completing an export
+// all clear that flag again. If the tab is closed/refreshed while dirty, the browser shows its
+// own "leave site? changes may not be saved" confirmation -- this can't be skipped or customized
+// by design (a security restriction all browsers enforce), but it's exactly the safety net that
+// matters here: don't let a closed tab silently erase a site visit.
+let formDirty = false;
+const mainEl = document.querySelector("main");
+mainEl.addEventListener("input", ()=>{ formDirty = true; });
+mainEl.addEventListener("change", ()=>{ formDirty = true; });
+window.addEventListener("beforeunload", (e)=>{
+  if(!formDirty) return;
+  e.preventDefault();
+  e.returnValue = "";
+});
+
 // Builds the draft zip Blob (same format used by manual Save Draft, auto-save, and the
 // final export's underlying data) — one place so all three stay in sync.
 async function buildDraftBlob(){
@@ -1274,33 +1342,14 @@ async function buildDraftBlob(){
   return await zip.generateAsync({type:"blob"});
 }
 
-document.getElementById("saveDraftBtn").addEventListener("click", async ()=>{
-  setDraftStatus("Saving draft…");
-  try{
-    const blob = await buildDraftBlob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${buildSiteLabel()} - Draft.zip`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setDraftStatus(`Draft saved — "${a.download}". Keep that file to resume later.`);
-  }catch(e){
-    setDraftStatus("Couldn't save the draft: " + e.message, true);
-  }
-});
-
-// --- Auto-save to a local OneDrive/SharePoint-synced folder ---
-// Uses the File System Access API to keep writing the same draft file in place, so if the
-// tab closes unexpectedly, whatever was last auto-saved is already sitting in that folder —
-// and if that folder is OneDrive/SharePoint-synced, it's backed up there within moments too.
-// Chrome/Edge on desktop only; not available on Safari, Firefox, or mobile browsers.
-function setAutoSaveStatus(msg, isError){
-  const el = document.getElementById("autoSaveStatus");
-  el.textContent = msg;
-  el.style.color = isError ? "#ffb4a8" : "#dbe9f7";
-}
+// --- Save Draft ---
+// On Chrome/Edge (desktop), the first click asks you to pick a save location once, then keeps
+// re-saving to that same file automatically as you work (roughly every 60 seconds, plus right
+// after most changes) -- click the button again any time to turn that auto-saving off. On
+// Safari, Firefox, or mobile browsers (which don't support picking a persistent file location),
+// it falls back to a plain one-time download each time you click it -- just click it again
+// whenever you want an updated snapshot.
+const saveDraftBtn = document.getElementById("saveDraftBtn");
 
 async function doAutoSave(){
   if(!autoSaveHandle) return;
@@ -1309,9 +1358,10 @@ async function doAutoSave(){
     const writable = await autoSaveHandle.createWritable();
     await writable.write(blob);
     await writable.close();
-    setAutoSaveStatus("Auto-saved at " + new Date().toLocaleTimeString());
+    setDraftStatus("Auto-saved at " + new Date().toLocaleTimeString());
+    formDirty = false;
   }catch(e){
-    setAutoSaveStatus("Auto-save failed: " + e.message, true);
+    setDraftStatus("Auto-save failed: " + e.message, true);
   }
 }
 
@@ -1319,31 +1369,48 @@ function maybeAutoSave(){
   if(autoSaveHandle) doAutoSave();
 }
 
-const autoSaveBtn = document.getElementById("autoSaveBtn");
-autoSaveBtn.addEventListener("click", async ()=>{
+saveDraftBtn.addEventListener("click", async ()=>{
   if(!("showSaveFilePicker" in window)){
-    setAutoSaveStatus("Auto-save needs Chrome or Edge on a computer — not supported in this browser.", true);
+    // No persistent-file support in this browser (Safari, Firefox, mobile) -- just download a
+    // one-time snapshot, same as before.
+    setDraftStatus("Saving draft…");
+    try{
+      const blob = await buildDraftBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${buildSiteLabel()} - Draft.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setDraftStatus(`Draft saved — "${a.download}". Keep that file to resume later.`);
+      formDirty = false;
+    }catch(e){
+      setDraftStatus("Couldn't save the draft: " + e.message, true);
+    }
     return;
   }
+
   if(autoSaveHandle){
-    // already on -> turn off
+    // Already on -> turn it off.
     autoSaveHandle = null;
     if(autoSaveTimer){ clearInterval(autoSaveTimer); autoSaveTimer = null; }
-    autoSaveBtn.textContent = "🔄 Auto-Save to Folder";
-    setAutoSaveStatus("Auto-save turned off.");
+    saveDraftBtn.textContent = "💾 Save Draft";
+    setDraftStatus("Auto-save turned off.");
     return;
   }
+
   try{
     autoSaveHandle = await window.showSaveFilePicker({
-      suggestedName: `${buildSiteLabel()} - AutoSave.zip`,
-      types: [{ description: "Survey Auto-Save", accept: { "application/zip": [".zip"] } }],
+      suggestedName: `${buildSiteLabel()} - Draft.zip`,
+      types: [{ description: "Survey Draft", accept: { "application/zip": [".zip"] } }],
     });
-    autoSaveBtn.textContent = "⏸ Stop Auto-Save";
-    setAutoSaveStatus("Auto-save on — pick a folder that syncs to OneDrive/SharePoint for best protection.");
+    saveDraftBtn.textContent = "⏸ Stop Auto-Save";
+    setDraftStatus("Saved — and now auto-saving as you work. Pick a folder that syncs to OneDrive/SharePoint for best protection. Click again to stop.");
     await doAutoSave();
     autoSaveTimer = setInterval(doAutoSave, 60000);
   }catch(e){
-    if(e.name !== "AbortError") setAutoSaveStatus("Couldn't set up auto-save: " + e.message, true);
+    if(e.name !== "AbortError") setDraftStatus("Couldn't save the draft: " + e.message, true);
   }
 });
 
@@ -1425,6 +1492,7 @@ document.getElementById("draftFileInput").addEventListener("change", async ()=>{
     updateMapLink();
     updateNetworkFields();
     setDraftStatus(`Draft loaded from "${file.name}" — ${(manifest.rooms||[]).length} room(s) restored.`);
+    formDirty = false;
   }catch(e){
     setDraftStatus("Couldn't load that draft: " + e.message, true);
   }
@@ -1451,9 +1519,39 @@ async function buildSubmissionPackage(){
   const locId = document.getElementById("locId").value.trim();
   const locName = document.getElementById("locName").value.trim();
   const surveyDate = document.getElementById("surveyDate").value || "";
-  if(!locId || !locName || !surveyDate){
+
+  // Every field marked with a * on the form has to be filled in before export -- collect the
+  // human-readable names of any that are still blank so the message tells you exactly what's
+  // missing instead of a generic "fill in required fields."
+  const REQUIRED_SIMPLE_FIELDS = [
+    { id: "locId", label: "Location ID" },
+    { id: "locName", label: "Location Name" },
+    { id: "street", label: "Street Address" },
+    { id: "city", label: "City" },
+    { id: "state", label: "State" },
+    { id: "zip", label: "ZIP" },
+    { id: "surveyDate", label: "Survey Date" },
+    { id: "survName", label: "Surveyor Name" },
+    { id: "netType", label: "Network Type" },
+  ];
+  const missingFields = [];
+  REQUIRED_SIMPLE_FIELDS.forEach(f=>{
+    const el = document.getElementById(f.id);
+    if(!el || !el.value || !el.value.trim()) missingFields.push(f.label);
+  });
+  Object.keys(rooms).forEach((id, i)=>{
+    const r = rooms[id];
+    const roomLabel = (r.name || "").trim() || `Room ${i+1}`;
+    if(!r.type) missingFields.push(`Room Type (${roomLabel})`);
+    if(!r.outletOk) missingFields.push(`Outlet available within 6 ft (${roomLabel})`);
+    ROOM_PHOTO_SLOTS.forEach(slot=>{
+      if(slot.required && !r.photos[slot.key]) missingFields.push(`${slot.label} photo (${roomLabel})`);
+    });
+  });
+
+  if(missingFields.length){
     statusEl.className = "status warn";
-    statusEl.textContent = "Please fill in Location ID, Location Name, and Survey Date before exporting -- Location ID is what keeps every site's files distinct once hundreds of these land in the same folder.";
+    statusEl.textContent = "Please fill in these required fields before exporting: " + missingFields.join(", ") + ".";
     return null;
   }
   if(!document.getElementById("signatureConfirm").checked){
@@ -1502,7 +1600,7 @@ async function buildSubmissionPackage(){
     else if(r.type === "Waiting Room") waitCount++;
     else if(r.type === "Break Room" || r.type === "Back Office") backCount++;
 
-    roomRows.push([r.type, roomName, r.outletOk, r.outletsNeeded, photoPaths.wide, photoPaths.mount, photoPaths.power, photoPaths.other, r.notes]);
+    roomRows.push([r.type, roomName, r.outletOk, r.outletsNeeded, photoPaths.wide, photoPaths.mount, photoPaths.power, r.notes]);
   }
 
   // network photos at site-folder root
@@ -1565,9 +1663,9 @@ async function buildSubmissionPackage(){
     "Signal Strength Photo","Optional Attachments Photo","Additional Notes","Site Photo Folder","Company","Submission Timestamp",
     "Map Link","Signature Confirmed","Case Complexity","Complexity Factors",
     "Room Type","Room Name / Number","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed","Wide Shot Photo",
-    "Mounting Wall & Ceiling Photo","Power Requirements Photo","Other Details Photo","Room Notes"];
+    "Mounting Wall & Ceiling Photo","Power Requirements Photo","Room Notes"];
 
-  const blankRoomFields = ["","","","","","","","",""];
+  const blankRoomFields = ["","","","","","","",""];
   const mergedRows = roomRows.length ? roomRows.map(rr => [...siteFieldsRow, ...rr]) : [[...siteFieldsRow, ...blankRoomFields]];
 
   // Five focused tabs instead of one wide single-row summary: General Info, Rooms, Network,
@@ -1590,7 +1688,7 @@ async function buildSubmissionPackage(){
   ];
 
   const roomsHeader = ["Location ID","Room Type","Room Name / Number","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed",
-    "Wide Shot Photo","Mounting Wall & Ceiling Photo","Power Requirements Photo","Other Details Photo","Room Notes"];
+    "Wide Shot Photo","Mounting Wall & Ceiling Photo","Power Requirements Photo","Room Notes"];
   const roomsRows = roomRows.length
     ? roomRows.map(rr => [siteFieldsRow[0], ...rr])
     : [[siteFieldsRow[0], ...blankRoomFields]];
@@ -1625,6 +1723,24 @@ async function buildSubmissionPackage(){
   return { siteFolder, submitFolderName, survNameForFile, roomCount: roomIds.length, files };
 }
 
+document.getElementById("downloadHelpToggle").addEventListener("click", ()=>{
+  const box = document.getElementById("downloadHelpText");
+  const isHidden = box.style.display === "none";
+  box.style.display = isHidden ? "block" : "none";
+  document.getElementById("downloadHelpToggle").textContent = isHidden
+    ? "📱 Hide download help"
+    : "📱 Can't find the downloaded file?";
+});
+
+document.getElementById("draftHelpToggle").addEventListener("click", ()=>{
+  const box = document.getElementById("draftHelpText");
+  const isHidden = box.style.display === "none";
+  box.style.display = isHidden ? "block" : "none";
+  document.getElementById("draftHelpToggle").textContent = isHidden
+    ? "ℹ️ Hide"
+    : "ℹ️ What do these buttons do?";
+});
+
 document.getElementById("exportBtn").addEventListener("click", async ()=>{
   const statusEl = document.getElementById("statusMsg");
   const pkg = await buildSubmissionPackage();
@@ -1643,121 +1759,7 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
 
   statusEl.className = "status ok";
   statusEl.textContent = `Done — exported ${pkg.roomCount} room(s). Check your downloads for "${a.download}".`;
-});
-
-// ---- Submit (Auto-Save to Folder): uses the File System Access API to write the same package
-// straight into a subfolder of a local folder the user picks once (ideally a OneDrive/Egnyte
-// Desktop-synced folder, so it lands in SharePoint/Egnyte automatically within moments). The
-// folder handle is remembered in IndexedDB so it doesn't need to be re-picked every visit.
-// Chrome/Edge on desktop only -- not available on Safari, Firefox, or mobile browsers.
-let submitFolderHandle = null;
-
-function idbOpen(){
-  return new Promise((resolve, reject)=>{
-    const req = indexedDB.open("site-survey-app", 1);
-    req.onupgradeneeded = ()=> req.result.createObjectStore("handles");
-    req.onsuccess = ()=> resolve(req.result);
-    req.onerror = ()=> reject(req.error);
-  });
-}
-async function idbSet(key, val){
-  const db = await idbOpen();
-  return new Promise((resolve, reject)=>{
-    const tx = db.transaction("handles", "readwrite");
-    tx.objectStore("handles").put(val, key);
-    tx.oncomplete = ()=> resolve();
-    tx.onerror = ()=> reject(tx.error);
-  });
-}
-async function idbGet(key){
-  const db = await idbOpen();
-  return new Promise((resolve, reject)=>{
-    const tx = db.transaction("handles", "readonly");
-    const req = tx.objectStore("handles").get(key);
-    req.onsuccess = ()=> resolve(req.result || null);
-    req.onerror = ()=> reject(req.error);
-  });
-}
-async function verifyPermission(handle, requestIfNeeded){
-  const opts = { mode: "readwrite" };
-  try{
-    if((await handle.queryPermission(opts)) === "granted") return true;
-    if(requestIfNeeded && (await handle.requestPermission(opts)) === "granted") return true;
-  }catch(e){ /* handle may be stale (folder moved/deleted) -- fall through to false */ }
-  return false;
-}
-async function writeFileToDirHandle(rootHandle, relativePath, blob){
-  const parts = relativePath.split("/");
-  let dir = rootHandle;
-  for(let i=0; i<parts.length-1; i++){
-    dir = await dir.getDirectoryHandle(parts[i], { create: true });
-  }
-  const fileHandle = await dir.getFileHandle(parts[parts.length-1], { create: true });
-  const writable = await fileHandle.createWritable();
-  await writable.write(blob);
-  await writable.close();
-}
-
-const autoSubmitBtn = document.getElementById("autoSubmitBtn");
-const autoSubmitNote = document.getElementById("autoSubmitNote");
-
-if(!("showDirectoryPicker" in window)){
-  autoSubmitBtn.disabled = true;
-  autoSubmitBtn.textContent = "✅ Auto-Submit (needs Chrome or Edge on a computer)";
-  autoSubmitNote.textContent = "Auto-submit isn't available in this browser or on phones — use \"Download Locally\" and the upload buttons below instead.";
-} else {
-  idbGet("submitFolderHandle").then(async stored=>{
-    if(stored && await verifyPermission(stored, false)){
-      submitFolderHandle = stored;
-      autoSubmitBtn.textContent = `✅ Submit (Auto-Save to "${stored.name}")`;
-    }
-  }).catch(()=>{});
-}
-
-autoSubmitBtn.addEventListener("click", async ()=>{
-  const statusEl = document.getElementById("statusMsg");
-  statusEl.className = "status";
-  statusEl.textContent = "";
-
-  // Resolve (or ask for) the destination folder FIRST, before any other awaited work, so the
-  // permission/picker prompts still happen inside the click's user-activation window.
-  let dirHandle = submitFolderHandle;
-  if(dirHandle && !(await verifyPermission(dirHandle, true))) dirHandle = null;
-  if(!dirHandle){
-    const stored = await idbGet("submitFolderHandle").catch(()=>null);
-    if(stored && await verifyPermission(stored, true)) dirHandle = stored;
-  }
-  if(!dirHandle){
-    try{
-      dirHandle = await window.showDirectoryPicker({ id: "site-survey-submissions", mode: "readwrite" });
-    }catch(e){
-      if(e.name !== "AbortError"){
-        statusEl.className = "status warn";
-        statusEl.textContent = "Couldn't open the folder picker: " + e.message;
-      }
-      return;
-    }
-    idbSet("submitFolderHandle", dirHandle).catch(()=>{});
-  }
-  submitFolderHandle = dirHandle;
-  autoSubmitBtn.textContent = `✅ Submit (Auto-Save to "${dirHandle.name}")`;
-
-  const pkg = await buildSubmissionPackage();
-  if(!pkg) return;
-
-  statusEl.className = "status";
-  statusEl.textContent = "Saving directly to your synced folder…";
-  try{
-    const siteDirHandle = await dirHandle.getDirectoryHandle(pkg.submitFolderName, { create: true });
-    for(const f of pkg.files){
-      await writeFileToDirHandle(siteDirHandle, f.path, f.blob);
-    }
-    statusEl.className = "status ok";
-    statusEl.textContent = `Submitted — saved "${pkg.submitFolderName}" (${pkg.roomCount} room(s)) directly into your selected folder. It syncs to SharePoint/Egnyte automatically.`;
-  }catch(e){
-    statusEl.className = "status warn";
-    statusEl.textContent = `Couldn't save automatically (${e.message}). Use "Download Locally" below and upload it manually instead.`;
-  }
+  formDirty = false;
 });
 </script>
 
