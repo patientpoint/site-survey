@@ -225,14 +225,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="header-actions-row">
       <button id="saveDraftBtn" type="button" class="header-btn">💾 Save Draft</button>
       <button id="loadDraftBtn" type="button" class="header-btn">📂 Resume from Draft</button>
+      <button id="startNewBtn" type="button" class="header-btn">🔄 Start New Survey</button>
       <input type="file" id="draftFileInput" accept=".zip" style="display:none;">
     </div>
     <span id="draftStatus" style="font-size:12px;color:#cdeaf0;"></span>
     <button type="button" id="draftHelpToggle" class="link-toggle-light">ℹ️ What do these buttons do?</button>
   </div>
-  <div id="draftHelpText" style="display:none;font-size:12px;color:#cdeaf0;max-width:420px;margin-top:2px;line-height:1.5;">
-    <strong>💾 Save Draft</strong> saves everything you've filled in so far so you don't lose it if you close the tab. On a computer with Chrome or Edge, it can keep auto-saving as you work after the first click; on a phone or other browsers, it downloads a fresh snapshot each time you tap it.<br><br>
-    <strong>📂 Resume from Draft</strong> lets you pick a previously saved draft file and fills the form back in exactly where you left off.
+  <div id="draftHelpText" style="display:none;font-size:12px;color:#cdeaf0;width:100%;margin-top:2px;line-height:1.5;">
+    <strong>💾 Save Draft:</strong> saves your progress. On Chrome/Edge computers, it can auto-save after the first click; on phones and other browsers, it downloads a new snapshot each time.<br><br>
+    <strong>📂 Resume from Draft:</strong> reloads a previously saved draft, filling the form back in right where you left off.<br><br>
+    <strong>🔄 Start New Survey:</strong> clears all fields, rooms, and photos. Confirmation is required because this cannot be undone.
   </div>
 </header>
 
@@ -494,10 +496,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 <script>
 const ROOM_TYPES = ["Exam Room","Waiting Room","Break Room","Back Office"];
+// None of the three slots is individually required anymore -- a room just needs at least one of
+// them filled in (see the "at least one photo" check in buildSubmissionPackage's validation).
 const ROOM_PHOTO_SLOTS = [
-  {key:"wide",   label:"Wide shot of entire room",              required:true,  suffix:"WideShot"},
-  {key:"mount",  label:"Device mounting wall & ceiling",         required:true,  suffix:"MountingWall"},
-  {key:"power",  label:"Power requirements (outlet close-up)",   required:true,  suffix:"Power"},
+  {key:"wide",   label:"Wide shot of entire room",              required:false, suffix:"WideShot"},
+  {key:"mount",  label:"Device mounting wall & ceiling",         required:false, suffix:"MountingWall"},
+  {key:"power",  label:"Power requirements (outlet close-up)",   required:false, suffix:"Power"},
 ];
 
 let roomCounter = 0;
@@ -1013,6 +1017,7 @@ function addRoom(){
         </div>
       </div>
       <p class="ada-note" style="display:none;">📏 <strong>Screen Mounting Height:</strong> 54" from the floor to the center of the screen. This height supports ADA accessibility for patients using wheelchairs.</p>
+      <p class="hint" style="margin-top:0;">* At least one photo below is required for this room.</p>
       <div class="photo-slots">${slotsHtml}</div>
       <div class="extra-photos-section">
         <label>Additional Photos (optional — add as many as you need)</label>
@@ -1169,12 +1174,21 @@ function wirePhotoSlot(slotEl, onFile){
     if(!restored) maybeAutoSave();
   }
 
+  function clear(){
+    onFile(null);
+    preview.innerHTML = "";
+    takeBtn.textContent = "📷 Take Photo";
+    uploadBtn.textContent = "🖼️ Upload";
+    camInput.value = "";
+    fileInput.value = "";
+  }
+
   takeBtn.addEventListener("click", ()=> camInput.click());
   uploadBtn.addEventListener("click", ()=> fileInput.click());
   camInput.addEventListener("change", ()=>{ const f = camInput.files[0]; if(f) setFile(f); });
   fileInput.addEventListener("change", ()=>{ const f = fileInput.files[0]; if(f) setFile(f); });
 
-  return { setFile };
+  return { setFile, clear };
 }
 
 // --- Complexity Assessment ---
@@ -1547,6 +1561,9 @@ async function buildSubmissionPackage(){
     ROOM_PHOTO_SLOTS.forEach(slot=>{
       if(slot.required && !r.photos[slot.key]) missingFields.push(`${slot.label} photo (${roomLabel})`);
     });
+    // Every room needs at least one photo (any of the three slots) -- not all three individually.
+    const hasAnyPhoto = ROOM_PHOTO_SLOTS.some(slot => !!r.photos[slot.key]);
+    if(!hasAnyPhoto) missingFields.push(`At least one photo needs to be added (${roomLabel})`);
   });
 
   if(missingFields.length){
@@ -1760,6 +1777,49 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
   statusEl.className = "status ok";
   statusEl.textContent = `Done — exported ${pkg.roomCount} room(s). Check your downloads for "${a.download}".`;
   formDirty = false;
+});
+
+// --- Start New Survey ---
+// Wipes every field, room, and photo back to a blank form (same state as a fresh page load),
+// so a surveyor can move on to the next site without reloading the page. Confirms first since
+// this can't be undone, and turns off auto-save (if it's on) before clearing anything so it
+// doesn't immediately overwrite the just-saved draft file with a blank one.
+document.getElementById("startNewBtn").addEventListener("click", ()=>{
+  if(!confirm("Start a new survey? This clears every field, room, and photo on this page. This can't be undone.")) return;
+
+  if(autoSaveHandle){
+    autoSaveHandle = null;
+    if(autoSaveTimer){ clearInterval(autoSaveTimer); autoSaveTimer = null; }
+    saveDraftBtn.textContent = "💾 Save Draft";
+  }
+
+  SIMPLE_FIELD_IDS.forEach(id=>{ document.getElementById(id).value = ""; });
+  document.getElementById("signatureConfirm").checked = false;
+  updateCompanyDependentFields();
+  updateNetworkFields();
+  updateMapLink();
+  hideSuggestions();
+
+  Object.keys(rooms).forEach(k=> delete rooms[k]);
+  document.getElementById("roomsContainer").innerHTML = "";
+  roomCounter = 0;
+  addRoom();
+
+  ["signal","optional","speedtest"].forEach(key=>{
+    networkPhotos[key] = null;
+    if(networkSlotApis[key]) networkSlotApis[key].clear();
+  });
+
+  autoLinkTouched.clear();
+  document.querySelectorAll(".cf-check").forEach(cb=>{ cb.checked = false; });
+  computeComplexity();
+
+  const statusMsgEl = document.getElementById("statusMsg");
+  statusMsgEl.className = "status";
+  statusMsgEl.textContent = "";
+  setDraftStatus("Started a new survey — form cleared.");
+  formDirty = false;
+  window.scrollTo({ top: 0, behavior: "smooth" });
 });
 </script>
 
