@@ -26,8 +26,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     --card:#ffffff; --border:#dbe2e8; --text:#1c2733; --muted:#6b7684; --danger:#c0392b; --ok:#2e7d32;
   }
   *{box-sizing:border-box;}
-  body{margin:0;padding-bottom:62px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
-  header{background:linear-gradient(135deg,var(--navy),var(--navy-dark));color:#fff;padding:16px 20px;position:sticky;top:0;z-index:10;border-bottom:3px solid var(--gold);box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px 16px;}
+  *{transition:background-color .15s ease, border-color .15s ease, box-shadow .15s ease, color .15s ease;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;padding-bottom:62px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy-dark));color:#fff;padding:16px 20px;border-bottom:3px solid var(--gold);box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px 16px;}
   .header-brand{flex:1 1 220px;min-width:200px;}
   .header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto;}
   .header-actions-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center;}
@@ -42,19 +45,30 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   header h1 .brand-tag{font-weight:400;font-size:13px;color:rgba(255,255,255,0.82);margin-left:8px;letter-spacing:0.02em;}
   header p{margin:4px 0 0;font-size:13px;color:#cdeaf0;}
   main{max-width:900px;margin:0 auto;padding:16px;}
-  section.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,0.06);}
-  section.card h2{margin:0 0 12px;font-size:16px;color:var(--navy);border-bottom:2px solid var(--gold);padding-bottom:8px;}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  section.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:22px;box-shadow:0 1px 2px rgba(16,24,32,0.04),0 4px 14px rgba(16,24,32,0.05);scroll-margin-top:16px;}
+  section.card h2{margin:0 0 14px;font-size:16px;color:var(--navy);border-bottom:2px solid var(--gold);padding-bottom:9px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
   @media (max-width:600px){.grid,.grid3{grid-template-columns:1fr;}}
-  label{display:block;font-size:12px;font-weight:bold;color:var(--muted);margin-bottom:4px;}
+  label{display:block;font-size:12px;font-weight:bold;color:var(--muted);margin-bottom:5px;letter-spacing:0.01em;}
   input[type=text],input[type=email],input[type=tel],input[type=date],select,textarea{
-    width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:6px;font-size:16px;background:#fff;color:var(--text);
+    width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:7px;font-size:16px;background:#fff;color:var(--text);
+  }
+  input[type=text]:focus,input[type=email]:focus,input[type=tel]:focus,input[type=date]:focus,select:focus,textarea:focus{
+    outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,97,119,0.14);
   }
   textarea{resize:vertical;min-height:56px;}
-  .field{margin-bottom:12px;}
+  .seg-toggle{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;max-width:200px;}
+  .seg-btn{flex:1;padding:7px 10px;border:none;border-right:1px solid var(--border);background:#fff;font-size:12px;font-weight:bold;color:var(--muted);cursor:pointer;min-height:34px;transition:background-color .15s ease,color .15s ease;}
+  .seg-btn:last-child{border-right:none;}
+  .seg-btn:hover{background:#f4f6f8;}
+  .seg-btn.active{background:var(--ok);color:#fff;}
+  .seg-btn.active:hover{background:#256a29;}
+  .field{margin-bottom:14px;}
   .req::after{content:" *";color:var(--danger);}
-  .room-card{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:14px;background:#fbfcfd;position:relative;}
+  .room-card{border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;background:#fbfcfd;position:relative;box-shadow:0 1px 2px rgba(16,24,32,0.03);}
+  .room-card-body{overflow:hidden;max-height:3000px;opacity:1;transition:max-height .3s ease, opacity .25s ease, margin .25s ease;}
+  .room-card.collapsed .room-card-body{display:block !important;max-height:0;opacity:0;margin:0;pointer-events:none;}
   .room-card-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
   .collapse-room-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;flex:1;min-width:0;padding:6px 2px;margin:-6px -2px;border-radius:6px;}
   .collapse-room-toggle:active{background:#eef2f5;}
@@ -63,15 +77,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .room-card-header h3{margin:0;font-size:14px;color:var(--navy-dark);display:flex;align-items:baseline;gap:6px;min-width:0;overflow:hidden;}
   .room-title{flex-shrink:0;}
   .room-summary{font-weight:normal;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .room-card.collapsed .room-card-body{display:none;}
   .room-card.collapsed{padding-bottom:14px;}
-  .remove-room{background:none;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:8px 4px;flex-shrink:0;white-space:nowrap;}
-  .photo-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+  .remove-room{background:none;border:none;color:var(--danger);font-size:13px;cursor:pointer;padding:8px 8px;border-radius:6px;flex-shrink:0;white-space:nowrap;}
+  .remove-room:hover{background:#fdecea;}
+  .photo-slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px;}
   @media (max-width:600px){.photo-slots{grid-template-columns:1fr;}}
-  .photo-slot{border:1px dashed var(--border);border-radius:8px;padding:8px;text-align:center;background:#fff;}
-  .photo-slot .cap{font-size:11px;font-weight:bold;color:var(--muted);margin-bottom:6px;display:block;}
-  .photo-slot img{max-width:100%;max-height:110px;border-radius:6px;display:block;margin:0 auto 6px;}
-  .photo-btn{display:inline-block;padding:11px 14px;border-radius:6px;background:var(--navy);color:#fff;font-size:13px;font-weight:bold;cursor:pointer;border:none;min-height:44px;}
+  .photo-slot{border:1px dashed var(--border);border-radius:8px;padding:6px;text-align:center;background:#fff;}
+  .photo-slot .cap{font-size:11px;font-weight:bold;color:var(--muted);margin-bottom:4px;display:block;}
+  .photo-slot img{max-width:100%;max-height:85px;border-radius:6px;display:block;margin:0 auto 4px;}
+  .photo-btn{display:inline-block;padding:11px 14px;border-radius:7px;background:var(--navy);color:#fff;font-size:13px;font-weight:bold;cursor:pointer;border:none;min-height:44px;transition:background-color .15s ease, transform .1s ease;}
+  .photo-btn:hover{background:var(--navy-dark);}
+  .photo-btn:active{transform:scale(0.97);}
   .photo-btn.replace{background:#8a97a3;}
   .slot-btns{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:2px;}
   .photo-slot .fname{font-size:11px;color:var(--ok);margin-top:4px;word-break:break-all;}
@@ -83,10 +99,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .extra-photo-card{border:1px dashed var(--border);border-radius:8px;padding:8px;text-align:center;background:#fff;}
   .extra-photo-card img{max-width:100%;max-height:100px;border-radius:6px;display:block;margin:0 auto 6px;}
   .ann-btn.danger{background:var(--danger);}
-  button.add-room{background:var(--gold);color:#ffffff;border:none;padding:10px 16px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,0.15);}
+  button.add-room{background:var(--gold);color:#ffffff;border:none;padding:10px 16px;border-radius:7px;font-weight:bold;cursor:pointer;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,0.15);transition:background-color .15s ease, transform .1s ease;}
   button.add-room:hover{background:var(--accent-light);}
-  button.export{background:var(--navy);color:#fff;border:none;padding:13px 22px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;width:100%;}
+  button.add-room:active{transform:scale(0.98);}
+  button.export{background:var(--navy);color:#fff;border:none;padding:13px 22px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:15px;width:100%;transition:background-color .15s ease, transform .1s ease;}
   button.export:hover{background:var(--navy-dark);}
+  button.export:active{transform:scale(0.99);}
   .step-box{padding:14px 16px;border:1px solid var(--border);background:#f7fafc;border-radius:8px;width:100%;margin:0 0 20px;text-align:center;}
   .step-box .status{text-align:left;}
   .submit-box{margin:16px 0 0;padding:14px 16px;border:1px solid var(--gold);background:#fff8e6;border-radius:8px;width:100%;text-align:center;}
@@ -94,16 +112,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .submit-box p.ext-note{margin-top:10px;color:var(--muted);font-size:12px;}
   .hint-note{color:var(--muted);font-size:12px;margin:8px 0 14px;}
   .link-toggle{background:none;border:none;color:var(--navy);text-decoration:underline;font-size:12px;cursor:pointer;padding:8px 0 0;display:block;margin:0 auto;}
+  .link-toggle:hover, .link-toggle-inline:hover{color:var(--navy-dark);}
+  .link-toggle-inline{background:none;border:none;color:var(--navy);text-decoration:underline;font-size:12px;cursor:pointer;padding:4px 10px 4px 0;}
+  .toggle-row{display:flex;flex-wrap:wrap;margin:-4px 0 10px;}
+  .photo-slot{transition:border-color .15s ease;}
+  .addon-del-btn{position:absolute;top:-10px;right:-6px;width:22px;height:22px;border-radius:50%;background:#fff;border:1px solid var(--border);color:#b00020;font-size:12px;line-height:1;cursor:pointer;padding:0;box-shadow:0 1px 2px rgba(0,0,0,.12);z-index:2;}
+  .addon-del-btn:hover{background:#fdecea;}
   .link-toggle-light{background:none;border:none;color:#cdeaf0;text-decoration:underline;font-size:12px;cursor:pointer;padding:6px 0 0;}
   button.export.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
   button.export.secondary:hover{background:#f0f6f8;}
-  .submit-link{display:block;width:100%;box-sizing:border-box;background:var(--gold);color:#fff;font-weight:bold;padding:13px 22px;border-radius:8px;text-decoration:none;font-size:15px;text-align:center;}
+  .submit-link{display:block;width:100%;box-sizing:border-box;background:var(--gold);color:#fff;font-weight:bold;padding:13px 22px;border-radius:8px;text-decoration:none;font-size:15px;text-align:center;transition:background-color .15s ease, transform .1s ease;}
   .submit-link:hover{background:var(--accent-light);}
+  .submit-link:active{transform:scale(0.99);}
   .submit-link.disabled{background:#dbe2e8;color:#8a97a3;pointer-events:none;filter:grayscale(40%);}
-  .cf-group{margin-bottom:16px;}
-  .cf-group-title{font-size:13px;color:var(--navy-dark);margin:0 0 8px;}
+  .cf-group{margin-bottom:12px;}
+  .cf-group-title{font-size:13px;color:var(--navy-dark);margin:0 0 4px;}
   .cf-group-note{font-weight:normal;color:var(--muted);font-size:12px;}
-  .cf-item{display:flex;align-items:flex-start;gap:10px;font-weight:normal;font-size:14px;color:var(--text);margin-bottom:2px;padding:8px 4px;border-radius:6px;}
+  .cf-list{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+  @media (max-width:600px){.cf-list{grid-template-columns:1fr;}}
+  .cf-item{display:flex;align-items:flex-start;gap:8px;font-weight:normal;font-size:13px;color:var(--text);margin-bottom:0;padding:5px 4px;border-radius:6px;}
   .cf-item:active{background:#f4f6f8;}
   .cf-item input{width:20px;height:20px;margin-top:1px;flex-shrink:0;}
   .cf-result{margin-top:6px;padding:14px 16px;border-radius:8px;font-weight:bold;font-size:15px;text-align:center;background:#e8f5e9;color:#2e7d32;}
@@ -118,8 +145,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   hr.divider{border:none;border-top:1px dashed var(--border);margin:18px 0;}
   .subhead{font-size:12px;font-weight:bold;color:var(--navy-dark);text-transform:uppercase;letter-spacing:0.03em;margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gold);}
   .subhead:first-of-type{margin-top:0;}
-  .header-btn{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;}
+  .header-btn{background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:background-color .15s ease, transform .1s ease;}
   .header-btn:hover{background:rgba(255,255,255,0.22);}
+  .header-btn:active{transform:scale(0.97);}
   .ann-btn{display:block;margin:4px auto 0;padding:5px 10px;font-size:11px;border:none;border-radius:5px;background:#6c757d;color:#fff;cursor:pointer;}
   .ann-btn:hover{background:#5a6268;}
   .annotate-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:10px;}
@@ -132,10 +160,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .ann-btn-small{padding:6px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;}
   .ann-btn-small:hover{background:#eef4fa;}
   .ann-save{background:var(--navy);color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:bold;cursor:pointer;}
-  .addr-suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.12);z-index:20;max-height:220px;overflow-y:auto;display:none;}
-  .addr-suggestions div{padding:8px 10px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;}
-  .addr-suggestions div:last-child{border-bottom:none;}
-  .addr-suggestions div:hover{background:#eef4fa;}
 
   body.dl-gate-active > header, body.dl-gate-active > main{
     filter:blur(5px);
@@ -207,7 +231,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     gap:2px; font-size:10px; color:var(--navy-dark); text-decoration:none; padding:6px 2px;
     border-radius:8px; font-weight:600;
   }
-  .quick-nav-item:active{ background:#eef4fa; }
+  .quick-nav-item:active{ background:#eef4fa; transform:scale(0.95); }
   .quick-nav-item.active{ color:var(--gold); }
   @media (min-width:900px){
     .quick-nav{ max-width:340px; left:50%; transform:translateX(-50%); border-radius:14px 14px 0 0; border:1px solid var(--border); border-bottom:none; }
@@ -247,13 +271,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="grid3">
       <div class="field"><label class="req">Location ID</label><input type="text" id="locId" placeholder="e.g. P12345"></div>
       <div class="field"><label class="req">Location Name</label><input type="text" id="locName" placeholder="e.g. Main Street Pediatrics"></div>
-      <div class="field"><label>Office Hours</label><input type="text" id="officeHours" placeholder="e.g. Mon-Fri 8am-5pm"></div>
     </div>
     <div class="grid3">
       <div class="field" style="position:relative;">
         <label class="req">Street Address</label>
-        <input type="text" id="street" autocomplete="off" placeholder="Start typing to search…">
-        <div class="addr-suggestions" id="addressSuggestions"></div>
+        <input type="text" id="street" autocomplete="off" placeholder="Street, or paste a full address here">
       </div>
       <div class="field"><label>Suite / Unit</label><input type="text" id="suite"></div>
       <div class="field"><label>&nbsp;</label><a id="mapLink" href="#" target="_blank" rel="noopener" style="display:inline-block;padding:9px 10px;background:#eef4fa;border:1px solid var(--border);border-radius:6px;color:var(--navy);text-decoration:none;font-size:13px;">📍 View on Google Maps</a></div>
@@ -263,22 +285,41 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="field"><label class="req">State</label><input type="text" id="state" maxlength="2" style="text-transform:uppercase"></div>
       <div class="field"><label class="req">ZIP</label><input type="text" id="zip"></div>
     </div>
+    <div class="grid3">
+      <div class="field">
+        <label>Office Hours</label>
+        <select id="officeHours">
+          <option value="" selected disabled>Select...</option>
+          <option value="Mon-Fri 9am-5pm">Mon-Fri 9am-5pm</option>
+          <option value="Mon-Fri 8am-4pm">Mon-Fri 8am-4pm</option>
+          <option value="Mon-Fri 8am-5pm">Mon-Fri 8am-5pm</option>
+          <option value="Other">Other (type below)</option>
+        </select>
+        <input type="text" id="officeHoursOther" placeholder="Type office hours" style="display:none;margin-top:6px;">
+      </div>
+      <div class="field"><label>Number of HCPs (doctors/providers)</label><input type="number" id="hcpCount" min="0" placeholder="e.g. 4"></div>
+    </div>
 
     <div class="subhead">Point of Contact</div>
     <div class="grid3">
-      <div class="field"><label>POC Name</label><input type="text" id="pocName"></div>
-      <div class="field"><label>POC Title / Role</label><input type="text" id="pocTitle"></div>
-      <div class="field"><label>POC Email</label><input type="email" id="pocEmail"></div>
+      <div class="field"><label>Onsite POC Name</label><input type="text" id="pocName"></div>
+    </div>
+    <div class="toggle-row">
+      <button type="button" id="pocTitleToggle" class="link-toggle-inline">+ Add title</button>
+      <button type="button" id="pocEmailToggle" class="link-toggle-inline">+ Add email</button>
+      <button type="button" id="pocPhoneToggle" class="link-toggle-inline">+ Add phone</button>
     </div>
     <div class="grid3">
-      <div class="field"><label>POC Phone</label><input type="tel" id="pocPhone"></div>
+      <div class="field" id="pocTitleField" style="display:none;"><label>Onsite POC Title / Role</label><input type="text" id="pocTitle"></div>
+      <div class="field" id="pocEmailField" style="display:none;"><label>Onsite POC Email</label><input type="email" id="pocEmail"></div>
+      <div class="field" id="pocPhoneField" style="display:none;"><label>Onsite POC Phone</label><input type="tel" id="pocPhone"></div>
     </div>
 
     <div class="subhead">Install Scheduling</div>
     <div class="grid3">
-      <div class="field"><label>Best Install Day(s)</label><input type="text" id="bestDay" placeholder="e.g. Tuesday or Wednesday, avoid Mondays"></div>
-      <div class="field"><label>Best Install Time</label>
-        <select id="bestTime">
+      <div class="field"><label>Preferred Date — Option 1</label><input type="date" id="prefDate1"></div>
+      <div class="field"><label>Preferred Time — Option 1</label>
+        <select id="prefTime1">
           <option value="">Select a time window</option>
           <option value="Before 9am">Before 9am</option>
           <option value="9am - 12pm">9am - 12pm</option>
@@ -291,6 +332,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </div>
       <div class="field"><label>Proposed Install Date</label><input type="date" id="installDate"></div>
     </div>
+    <div class="toggle-row">
+      <button type="button" id="prefOption2Toggle" class="link-toggle-inline">+ Add another preferred date/time</button>
+    </div>
+    <div class="grid3" id="prefOption2Fields" style="display:none;">
+      <div class="field"><label>Preferred Date — Option 2</label><input type="date" id="prefDate2"></div>
+      <div class="field"><label>Preferred Time — Option 2</label>
+        <select id="prefTime2">
+          <option value="">Select a time window</option>
+          <option value="Before 9am">Before 9am</option>
+          <option value="9am - 12pm">9am - 12pm</option>
+          <option value="12pm - 3pm">12pm - 3pm</option>
+          <option value="3pm - 6pm">3pm - 6pm</option>
+          <option value="After 6pm">After 6pm</option>
+          <option value="After Hours">After Hours</option>
+          <option value="No preference / Flexible">No preference / Flexible</option>
+        </select>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <button type="button" id="installNotesToggle" class="link-toggle-inline">+ Add notes</button>
+    </div>
+    <div class="field" id="installNotesField" style="display:none;"><label>Install Scheduling Notes</label><textarea id="installNotes"></textarea></div>
 
     <div class="subhead">Survey Info</div>
     <div class="grid3">
@@ -302,8 +365,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
     <div class="grid3">
       <div class="field" id="survCompanyField" style="display:none;"><label>Surveyor Company / Organization</label><input type="text" id="survCompany"></div>
-      <div class="field"><label>Surveyor Email</label><input type="email" id="survEmail" autocomplete="off"></div>
-      <div class="field"><label>Surveyor Phone</label><input type="tel" id="survPhone"></div>
+    </div>
+    <div class="toggle-row">
+      <button type="button" id="survEmailToggle" class="link-toggle-inline">+ Add email</button>
+      <button type="button" id="survPhoneToggle" class="link-toggle-inline">+ Add phone</button>
+    </div>
+    <div class="grid3">
+      <div class="field" id="survEmailField" style="display:none;"><label>Surveyor Email</label><input type="email" id="survEmail" autocomplete="off"></div>
+      <div class="field" id="survPhoneField" style="display:none;"><label>Surveyor Phone</label><input type="tel" id="survPhone"></div>
     </div>
   </section>
 
@@ -338,18 +407,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <a href="https://www.speedtest.net" target="_blank" rel="noopener" style="display:inline-block;padding:9px 10px;background:#eef4fa;border:1px solid var(--border);border-radius:6px;color:var(--navy);text-decoration:none;font-size:13px;">🔗 Check speed at speedtest.net</a>
       </div>
     </div>
-    <div class="photo-slots" style="margin-top:10px;">
-      <div class="photo-slot" id="slot-speedtest">
-        <span class="cap">Speed test screenshot (optional, in addition to typing results above)</span>
-        <div class="preview"></div>
-        <div class="slot-btns">
-          <button class="photo-btn take-btn" type="button">📷 Take Photo</button>
-          <button class="photo-btn upload-btn" type="button">🖼️ Upload</button>
-        </div>
-        <input type="file" accept="image/*" capture="environment" class="cam-input">
-        <input type="file" accept="image/*" class="file-input">
-      </div>
-    </div>
     <div class="grid" id="cellularFields" style="display:none;">
       <div class="field">
         <label>Best Carrier</label>
@@ -372,9 +429,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <select id="dataCloset"><option value="" selected disabled>Select...</option><option value="Yes">Yes</option><option value="No">No</option><option value="N/A">N/A</option></select>
       </div>
     </div>
+    <div class="toggle-row">
+      <button type="button" id="signalPhotoToggle" class="link-toggle-inline">+ Add signal strength photo</button>
+      <button type="button" id="optionalPhotoToggle" class="link-toggle-inline">+ Add optional attachment</button>
+      <button type="button" id="speedtestPhotoToggle" class="link-toggle-inline">+ Add speed test screenshot</button>
+      <button type="button" id="netNotesToggle" class="link-toggle-inline">+ Add notes</button>
+    </div>
     <div class="photo-slots">
-      <div class="photo-slot" id="slot-signal">
-        <span class="cap req">Signal strength / speed test screenshot</span>
+      <div class="photo-slot" id="slot-signal" style="display:none;">
+        <span class="cap">Signal strength / speed test screenshot</span>
         <div class="preview"></div>
         <div class="slot-btns">
           <button class="photo-btn take-btn" type="button">📷 Take Photo</button>
@@ -383,7 +446,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <input type="file" accept="image/*" capture="environment" class="cam-input">
         <input type="file" accept="image/*" class="file-input">
       </div>
-      <div class="photo-slot" id="slot-optional">
+      <div class="photo-slot" id="slot-optional" style="display:none;">
         <span class="cap">Optional attachment (floor plan / switch map / power panel)</span>
         <div class="preview"></div>
         <div class="slot-btns">
@@ -393,8 +456,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <input type="file" accept="image/*" capture="environment" class="cam-input">
         <input type="file" accept="image/*" class="file-input">
       </div>
+      <div class="photo-slot" id="slot-speedtest" style="display:none;">
+        <span class="cap">Speed test screenshot (optional, in addition to typing results above)</span>
+        <div class="preview"></div>
+        <div class="slot-btns">
+          <button class="photo-btn take-btn" type="button">📷 Take Photo</button>
+          <button class="photo-btn upload-btn" type="button">🖼️ Upload</button>
+        </div>
+        <input type="file" accept="image/*" capture="environment" class="cam-input">
+        <input type="file" accept="image/*" class="file-input">
+      </div>
     </div>
-    <div class="field" style="margin-top:12px;"><label>Additional Notes</label><textarea id="netNotes"></textarea></div>
+    <div class="field" id="netNotesField" style="display:none;margin-top:10px;"><label>Additional Notes</label><textarea id="netNotes"></textarea></div>
   </section>
 
   <section class="card" id="section-complexity">
@@ -403,31 +476,37 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     <div class="cf-group">
       <h3 class="cf-group-title">Hard Stop Factors <span class="cf-group-note">(any single factor = Complex)</span></h3>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="5+ devices / multi-day install"> 5+ devices / multi-day install</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Non-standard wall type"> Non-standard wall type</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Outlet distance 36-90&quot; or non-standard outlet"> Outlet distance 36-90" or non-standard outlet</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Electrical work needed"> Electrical work needed</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Hardline only / blocked ports / weak signal"> Hardline only / blocked ports / weak signal</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="No in-house IT contact"> No in-house IT contact</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Narrow install window / pilot needed for large install"> Narrow install window / pilot needed for large install</label>
+      <div class="cf-list">
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="5+ devices / multi-day install"> 5+ devices / multi-day install</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Non-standard wall type"> Non-standard wall type</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Outlet distance 36-90&quot; or non-standard outlet"> Outlet distance 36-90" or non-standard outlet</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Electrical work needed"> Electrical work needed</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Hardline only / blocked ports / weak signal"> Hardline only / blocked ports / weak signal</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="No in-house IT contact"> No in-house IT contact</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Narrow install window / pilot needed for large install"> Narrow install window / pilot needed for large install</label>
+      </div>
     </div>
 
     <div class="cf-group">
       <h3 class="cf-group-title">Soft Flag Factors <span class="cf-group-note">(two or more = Complex)</span></h3>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Close to corner / under 75% sightline"> Close to corner / under 75% sightline</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Landlord permit required"> Landlord permit required</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="No stands allowed"> No stands allowed</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Planned competitor removal"> Planned competitor removal</label>
+      <div class="cf-list">
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Close to corner / under 75% sightline"> Close to corner / under 75% sightline</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Landlord permit required"> Landlord permit required</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="No stands allowed"> No stands allowed</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Planned competitor removal"> Planned competitor removal</label>
+      </div>
     </div>
 
     <div class="cf-group">
       <h3 class="cf-group-title">Blocked Factors <span class="cf-group-note">(any single factor = Complex)</span></h3>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No studs or rounded walls"> No studs or rounded walls</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Close to a water source"> Close to a water source</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No panel access / two-prong ungrounded outlet"> No panel access / two-prong ungrounded outlet</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No Cradlepoint or network, can't whitelist splash page"> No Cradlepoint or network, can't whitelist splash page</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Placement Agreement rejected"> Placement Agreement rejected</label>
-      <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Expensive renovations required (no studs)"> Expensive renovations required (no studs)</label>
+      <div class="cf-list">
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No studs or rounded walls"> No studs or rounded walls</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Close to a water source"> Close to a water source</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No panel access / two-prong ungrounded outlet"> No panel access / two-prong ungrounded outlet</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No Cradlepoint or network, can't whitelist splash page"> No Cradlepoint or network, can't whitelist splash page</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Placement Agreement rejected"> Placement Agreement rejected</label>
+        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Expensive renovations required (no studs)"> Expensive renovations required (no studs)</label>
+      </div>
     </div>
 
     <div class="cf-result" id="cfResult"><span id="cfResultLabel">✅ Simple</span></div>
@@ -499,10 +578,20 @@ const ROOM_TYPES = ["Exam Room","Waiting Room","Break Room","Back Office"];
 // None of the three slots is individually required anymore -- a room just needs at least one of
 // them filled in (see the "at least one photo" check in buildSubmissionPackage's validation).
 const ROOM_PHOTO_SLOTS = [
-  {key:"wide",   label:"Wide shot of entire room",              required:false, suffix:"WideShot"},
-  {key:"mount",  label:"Device mounting wall & ceiling",         required:false, suffix:"MountingWall"},
+  {key:"wide",   label:"Environmental photo of the room",       required:false, suffix:"EnvironmentalPhoto"},
+  {key:"mount",  label:"Mounting Wall Photo",                    required:true,  suffix:"MountingWall"},
   {key:"power",  label:"Power requirements (outlet close-up)",   required:false, suffix:"Power"},
 ];
+
+// Screen Size only makes sense for certain room types, and the choices themselves differ by
+// room type (a Waiting Room screen runs much bigger than an Exam Room one). Room types not
+// listed here (e.g. Break Room, Back Office) simply don't show the field at all.
+const SCREEN_SIZE_OPTIONS = {
+  "Waiting Room": ["32","43","50","55","65","75"],
+  "Break Room": ["32","43","50","55","65","75"],
+  "Back Office": ["32","43","50","55","65","75"],
+  "Exam Room": ["22","32"],
+};
 
 let roomCounter = 0;
 var __surveyBlocked = (function(){
@@ -587,120 +676,51 @@ function updateMapLink(){
 });
 updateMapLink();
 
-// --- Address lookup (free OpenStreetMap/Nominatim search — no API key needed) ---
-const US_STATE_ABBR = {
-  "alabama":"AL","alaska":"AK","arizona":"AZ","arkansas":"AR","california":"CA","colorado":"CO",
-  "connecticut":"CT","delaware":"DE","district of columbia":"DC","florida":"FL","georgia":"GA",
-  "hawaii":"HI","idaho":"ID","illinois":"IL","indiana":"IN","iowa":"IA","kansas":"KS","kentucky":"KY",
-  "louisiana":"LA","maine":"ME","maryland":"MD","massachusetts":"MA","michigan":"MI","minnesota":"MN",
-  "mississippi":"MS","missouri":"MO","montana":"MT","nebraska":"NE","nevada":"NV","new hampshire":"NH",
-  "new jersey":"NJ","new mexico":"NM","new york":"NY","north carolina":"NC","north dakota":"ND",
-  "ohio":"OH","oklahoma":"OK","oregon":"OR","pennsylvania":"PA","rhode island":"RI","south carolina":"SC",
-  "south dakota":"SD","tennessee":"TN","texas":"TX","utah":"UT","vermont":"VT","virginia":"VA",
-  "washington":"WA","west virginia":"WV","wisconsin":"WI","wyoming":"WY",
-};
-
-// Paste a free Geoapify API key here (myprojects.geoapify.com -> create project -> API Keys) to
-// upgrade address suggestions from the free OpenStreetMap lookup to Geoapify's more accurate
-// Address Autocomplete API. Leave it blank and everything keeps working exactly as it does today
-// -- OpenStreetMap is used automatically as a fallback whenever no key is set, or if Geoapify's
-// call fails for any reason (rate limit, network block, bad key, etc).
-const GEOAPIFY_API_KEY = "";
-
+// --- One-line address split ---
+// No live lookup/autocomplete service is used (removed per request -- it called out to external
+// geocoding APIs while typing, which isn't needed). Instead, if someone pastes or types the whole
+// address as one line into Street Address (e.g. "123 Main St, Springfield, IL 62704"), tabbing or
+// clicking away from the field automatically splits it into Street/City/State/ZIP for them.
 const streetInput = document.getElementById("street");
-const suggBox = document.getElementById("addressSuggestions");
-let addrDebounce, addrAbort;
 
-streetInput.addEventListener("input", ()=>{
-  clearTimeout(addrDebounce);
-  const q = streetInput.value.trim();
-  if(q.length < 4){ hideSuggestions(); return; }
-  addrDebounce = setTimeout(()=> fetchAddressSuggestions(q), 450);
-});
-
-document.addEventListener("click", (e)=>{
-  if(e.target !== streetInput && !suggBox.contains(e.target)) hideSuggestions();
-});
-
-function hideSuggestions(){ suggBox.style.display = "none"; suggBox.innerHTML = ""; }
-
-// Normalizes either source's result shape into one common shape used by render/apply below, so
-// the rest of the code doesn't need to know or care which service actually answered.
-function normalizeGeoapify(r){
-  return {
-    display: r.formatted || [r.address_line1, r.address_line2].filter(Boolean).join(", "),
-    street: [r.housenumber, r.street].filter(Boolean).join(" "),
-    city: r.city || "",
-    state: r.state_code || r.state || "",
-    zip: r.postcode || "",
-  };
-}
-function normalizeNominatim(r){
-  const a = r.address || {};
-  const stateName = (a.state || "").toLowerCase();
-  return {
-    display: r.display_name || "",
-    street: [a.house_number, a.road || a.pedestrian || a.residential].filter(Boolean).join(" "),
-    city: a.city || a.town || a.village || a.hamlet || a.county || "",
-    state: US_STATE_ABBR[stateName] || (a.state || "").slice(0,2).toUpperCase(),
-    zip: a.postcode || "",
-  };
+function parseOneLineAddress(text){
+  const t = text.trim();
+  // "Street, City, ST ZIP" or "Street, City, ST, ZIP"
+  let m = t.match(/^(.*?),\s*([^,]+?),\s*([A-Za-z]{2})[,\s]+(\d{5}(?:-\d{4})?)\s*$/);
+  if(m) return { street: m[1].trim(), city: m[2].trim(), state: m[3].toUpperCase(), zip: m[4] };
+  // "Street, City ST ZIP" (no comma before the state)
+  m = t.match(/^(.*?),\s*([^,]+?)\s+([A-Za-z]{2})\s+(\d{5}(?:-\d{4})?)\s*$/);
+  if(m) return { street: m[1].trim(), city: m[2].trim(), state: m[3].toUpperCase(), zip: m[4] };
+  return null;
 }
 
-async function fetchFromGeoapify(q, signal){
-  const url = "https://api.geoapify.com/v1/geocode/autocomplete?format=json&limit=5&filter=countrycode:us&text="
-    + encodeURIComponent(q) + "&apiKey=" + encodeURIComponent(GEOAPIFY_API_KEY);
-  const res = await fetch(url, { signal });
-  if(!res.ok) throw new Error("geoapify lookup failed");
-  const data = await res.json();
-  return (data.results || []).map(normalizeGeoapify);
-}
-async function fetchFromNominatim(q, signal){
-  const url = "https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=us&limit=5&q=" + encodeURIComponent(q);
-  const res = await fetch(url, { headers: { "Accept": "application/json" }, signal });
-  if(!res.ok) throw new Error("nominatim lookup failed");
-  const results = await res.json();
-  return results.map(normalizeNominatim);
-}
-
-async function fetchAddressSuggestions(q){
-  if(addrAbort) addrAbort.abort();
-  addrAbort = new AbortController();
-  const signal = addrAbort.signal;
-  try{
-    let results = [];
-    if(GEOAPIFY_API_KEY){
-      try{
-        results = await fetchFromGeoapify(q, signal);
-      }catch(e){
-        if(e.name === "AbortError") return;
-        results = await fetchFromNominatim(q, signal); // fall back silently
-      }
-    } else {
-      results = await fetchFromNominatim(q, signal);
-    }
-    renderSuggestions(results);
-  }catch(e){
-    if(e.name !== "AbortError") hideSuggestions();
-  }
-}
-
-function renderSuggestions(results){
-  if(!results.length){ hideSuggestions(); return; }
-  suggBox.innerHTML = results.map((r,i)=>`<div data-i="${i}">${r.display}</div>`).join("");
-  suggBox.style.display = "block";
-  suggBox.querySelectorAll("div").forEach((el,i)=>{
-    el.addEventListener("click", ()=> applySuggestion(results[i]));
-  });
-}
-
-function applySuggestion(r){
-  document.getElementById("street").value = r.street;
-  document.getElementById("city").value = r.city;
-  document.getElementById("state").value = r.state;
-  document.getElementById("zip").value = r.zip;
-  hideSuggestions();
+streetInput.addEventListener("blur", ()=>{
+  const parsed = parseOneLineAddress(streetInput.value);
+  if(!parsed) return;
+  streetInput.value = parsed.street;
+  const cityEl = document.getElementById("city");
+  const stateEl = document.getElementById("state");
+  const zipEl = document.getElementById("zip");
+  if(!cityEl.value.trim()) cityEl.value = parsed.city;
+  if(!stateEl.value.trim()) stateEl.value = parsed.state;
+  if(!zipEl.value.trim()) zipEl.value = parsed.zip;
   updateMapLink();
+  maybeAutoSave();
+});
+
+// --- Office Hours: a dropdown of common patterns, with an "Other" option that reveals a plain
+// text field for anything that doesn't fit the presets. ---
+const officeHoursEl = document.getElementById("officeHours");
+const officeHoursOtherEl = document.getElementById("officeHoursOther");
+function updateOfficeHoursField(){
+  officeHoursOtherEl.style.display = (officeHoursEl.value === "Other") ? "block" : "none";
+}
+officeHoursEl.addEventListener("change", updateOfficeHoursField);
+updateOfficeHoursField();
+// Returns the value that should actually be exported: the custom text when "Other" is picked,
+// otherwise whatever preset is selected.
+function getOfficeHoursValue(){
+  return (officeHoursEl.value === "Other") ? officeHoursOtherEl.value.trim() : (officeHoursEl.value || "");
 }
 
 // --- Company (Internal/External) drives whether Surveyor Company is shown/needed. Everyone
@@ -973,17 +993,21 @@ function annGetPos(e){
 function addRoom(){
   roomCounter++;
   const id = "room" + roomCounter;
-  rooms[id] = { type: "", name: "", notes: "", outletOk: "", outletsNeeded: "", photos: {wide:null, mount:null, power:null, other:null}, extraPhotos: [], _apis: {} };
+  rooms[id] = { type: "", name: "", notes: "", outletOk: "", outletsNeeded: "", screenSize: "", photos: {wide:null, mount:null, power:null, other:null}, extraPhotos: [], _apis: {} };
 
   const wrap = document.createElement("div");
   wrap.className = "room-card";
   wrap.id = id;
 
   const typeOptions = '<option value="" selected disabled>Select...</option>' + ROOM_TYPES.map(t=>`<option value="${t}">${t}</option>`).join("");
-  let slotsHtml = "";
+  // Whichever slot has required:true (see ROOM_PHOTO_SLOTS above) stays visible by default.
+  // The rest are each tucked behind their own separate "+ Add ..." toggle, independent of one
+  // another, so the surveyor can add any one, some, or all of them -- same for extra photos below.
+  let requiredSlotHtml = "";
+  const slotHtmlByKey = {};
   ROOM_PHOTO_SLOTS.forEach(slot=>{
-    slotsHtml += `
-      <div class="photo-slot" data-slot="${slot.key}">
+    const html = `
+      <div class="photo-slot${!slot.required ? " room-" + slot.key + "-field" : ""}"${!slot.required ? ' style="display:none;"' : ""} data-slot="${slot.key}">
         <span class="cap ${slot.required ? "req" : ""}">${slot.label}</span>
         <div class="preview"></div>
         <div class="slot-btns">
@@ -993,6 +1017,7 @@ function addRoom(){
         <input type="file" accept="image/*" capture="environment" class="cam-input">
         <input type="file" accept="image/*" class="file-input">
       </div>`;
+    if(slot.required) requiredSlotHtml = html; else slotHtmlByKey[slot.key] = html;
   });
 
   wrap.innerHTML = `
@@ -1008,28 +1033,49 @@ function addRoom(){
         <div class="field"><label class="req">Room Type</label><select class="rt-type">${typeOptions}</select></div>
         <div class="field"><label>Room Name / Number</label><input type="text" class="rt-name" placeholder="e.g. Exam Room 1"></div>
       </div>
-      <div class="grid">
-        <div class="field"><label class="req">Outlet available within 6 ft of mounting area?</label>
-          <select class="rt-outlet"><option value="" selected disabled>Select...</option><option value="Yes">Yes</option><option value="No">No</option></select>
-        </div>
-        <div class="field"><label>Additional Outlets Needed?</label>
-          <select class="rt-outlets-needed"><option value="" selected disabled>Select...</option><option value="No">No</option><option value="Yes">Yes</option></select>
-        </div>
+      <div class="grid rt-screensize-field" style="display:none;">
+        <div class="field"><label>Screen Size</label><select class="rt-screensize"><option value="" selected disabled>Select...</option></select></div>
       </div>
       <p class="ada-note" style="display:none;">📏 <strong>Screen Mounting Height:</strong> 54" from the floor to the center of the screen. This height supports ADA accessibility for patients using wheelchairs.</p>
-      <p class="hint" style="margin-top:0;">* At least one photo below is required for this room.</p>
-      <div class="photo-slots">${slotsHtml}</div>
-      <div class="extra-photos-section">
-        <label>Additional Photos (optional — add as many as you need)</label>
-        <div class="extra-photos-grid"></div>
-        <div class="slot-btns">
-          <button class="photo-btn extra-take-btn" type="button">📷 Take Photo</button>
-          <button class="photo-btn upload-btn extra-upload-btn" type="button">🖼️ Upload</button>
-        </div>
-        <input type="file" accept="image/*" capture="environment" class="extra-cam-input">
-        <input type="file" accept="image/*" multiple class="extra-file-input">
+      <p class="hint" style="margin-top:0;">* A mounting wall photo of the room is required.</p>
+      <div class="photo-slots">
+        ${requiredSlotHtml}
       </div>
-      <div class="field" style="margin-top:10px;"><label>Room Notes</label><textarea class="rt-notes"></textarea></div>
+      <div class="grid" style="margin-top:10px;">
+        <div class="field"><label class="req">Outlet available within 6 ft of mounting area?</label>
+          <div class="seg-toggle rt-outlet" data-value="">
+            <button type="button" class="seg-btn" data-val="Yes">✓ Yes</button>
+            <button type="button" class="seg-btn" data-val="No">✕ No</button>
+          </div>
+        </div>
+        <div class="field"><label>Additional Outlets Needed?</label>
+          <div class="seg-toggle rt-outlets-needed" data-value="">
+            <button type="button" class="seg-btn" data-val="Yes">✓ Yes</button>
+            <button type="button" class="seg-btn" data-val="No">✕ No</button>
+          </div>
+        </div>
+      </div>
+      <div class="toggle-row">
+        <button type="button" class="link-toggle-inline room-wide-toggle">+ Add environmental photo</button>
+        <button type="button" class="link-toggle-inline room-power-toggle">+ Add power photo</button>
+        <button type="button" class="link-toggle-inline room-extra-toggle">+ Add extra photos</button>
+        <button type="button" class="link-toggle-inline room-notes-toggle">+ Add notes</button>
+      </div>
+      <div class="photo-slots">
+        ${slotHtmlByKey.wide}
+        ${slotHtmlByKey.power}
+      </div>
+      <div class="extra-photos-section room-extra-field" style="display:none;">
+          <label>Additional Photos (optional — add as many as you need)</label>
+          <div class="extra-photos-grid"></div>
+          <div class="slot-btns">
+            <button class="photo-btn extra-take-btn" type="button">📷 Take Photo</button>
+            <button class="photo-btn upload-btn extra-upload-btn" type="button">🖼️ Upload</button>
+          </div>
+          <input type="file" accept="image/*" capture="environment" class="extra-cam-input">
+          <input type="file" accept="image/*" multiple class="extra-file-input">
+        </div>
+      <div class="field room-notes-field" style="display:none;margin-top:10px;"><label>Room Notes</label><textarea class="rt-notes"></textarea></div>
     </div>
   `;
 
@@ -1054,16 +1100,90 @@ function addRoom(){
     wrap.querySelector(".ada-note").style.display = (rooms[id].type === "Exam Room") ? "block" : "none";
   }
   updateAdaNote();
-  wrap.querySelector(".rt-type").addEventListener("change", e => { rooms[id].type = e.target.value; updateAdaNote(); updateRoomSummary(); maybeAutoSave(); });
+  // Screen Size only applies to room types listed in SCREEN_SIZE_OPTIONS, and the choices
+  // themselves change with the room type -- so the <option> list is rebuilt every time the
+  // room type changes, and a previously-picked size that no longer fits the new type is cleared.
+  function updateScreenSizeField(){
+    const wrapEl = wrap.querySelector(".rt-screensize-field");
+    const sel = wrap.querySelector(".rt-screensize");
+    const sizes = SCREEN_SIZE_OPTIONS[rooms[id].type];
+    if(!sizes){
+      wrapEl.style.display = "none";
+      return;
+    }
+    wrapEl.style.display = "";
+    const keepValue = sizes.includes(rooms[id].screenSize) ? rooms[id].screenSize : "";
+    sel.innerHTML = '<option value="" selected disabled>Select...</option>' +
+      sizes.map(s => `<option value="${s}"${s === keepValue ? " selected" : ""}>${s}"</option>`).join("");
+    if(keepValue !== rooms[id].screenSize){ rooms[id].screenSize = ""; }
+  }
+  updateScreenSizeField();
+  rooms[id]._updateScreenSizeField = updateScreenSizeField;
+  wrap.querySelector(".rt-type").addEventListener("change", e => { rooms[id].type = e.target.value; updateAdaNote(); updateScreenSizeField(); updateRoomSummary(); maybeAutoSave(); });
   wrap.querySelector(".rt-name").addEventListener("input", e => { rooms[id].name = e.target.value; updateRoomSummary(); });
-  wrap.querySelector(".rt-outlet").addEventListener("change", e => { rooms[id].outletOk = e.target.value; syncAutoComplexityFactors(); maybeAutoSave(); });
-  wrap.querySelector(".rt-outlets-needed").addEventListener("change", e => { rooms[id].outletsNeeded = e.target.value; syncAutoComplexityFactors(); maybeAutoSave(); });
-  wrap.querySelector(".rt-notes").addEventListener("input", e => rooms[id].notes = e.target.value);
+  wrap.querySelector(".rt-screensize").addEventListener("change", e => { rooms[id].screenSize = e.target.value; maybeAutoSave(); });
+  rooms[id]._outletToggleApi = wireSegToggle(wrap.querySelector(".rt-outlet"), val => { rooms[id].outletOk = val; syncAutoComplexityFactors(); maybeAutoSave(); });
+  rooms[id]._outletsNeededToggleApi = wireSegToggle(wrap.querySelector(".rt-outlets-needed"), val => { rooms[id].outletsNeeded = val; syncAutoComplexityFactors(); maybeAutoSave(); });
+  wrap.querySelector(".rt-notes").addEventListener("input", e => { rooms[id].notes = e.target.value; maybeAutoSave(); });
 
   wrap.querySelectorAll(".photo-slot").forEach(slotEl=>{
     const key = slotEl.dataset.slot;
     rooms[id]._apis[key] = wirePhotoSlot(slotEl, file => { rooms[id].photos[key] = file; });
   });
+
+  // Mounting Wall, Power, Additional Photos, and Notes each get their own separate toggle --
+  // independent of one another, so the surveyor can add any one, some, or all of them as needed.
+  // Each also gets a small "✕" delete button that clears its value and collapses it back to hidden.
+  function wireRoomPhotoToggle(toggleClass, fieldClass, showText, hideText, hasValueFn, onDelete){
+    const toggle = wrap.querySelector("." + toggleClass);
+    const field = wrap.querySelector("." + fieldClass);
+    field.style.position = "relative";
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "addon-del-btn";
+    delBtn.textContent = "✕";
+    delBtn.title = "Remove";
+    field.appendChild(delBtn);
+    function collapse(){
+      field.style.display = "none";
+      toggle.textContent = showText;
+    }
+    toggle.addEventListener("click", ()=>{
+      const isHidden = field.style.display === "none";
+      field.style.display = isHidden ? "" : "none";
+      toggle.textContent = isHidden ? hideText : showText;
+    });
+    delBtn.addEventListener("click", ()=>{
+      if(!confirm("Remove this and clear what you entered? This can't be undone.")) return;
+      if(onDelete) onDelete();
+      collapse();
+      maybeAutoSave();
+    });
+    return {
+      expandIfNeeded(){
+        if(hasValueFn()){ field.style.display = ""; toggle.textContent = hideText; }
+      },
+      collapse
+    };
+  }
+  const roomWideToggleApi = wireRoomPhotoToggle("room-wide-toggle", "room-wide-field",
+    "+ Add environmental photo", "- Hide environmental photo", ()=> !!rooms[id].photos.wide,
+    ()=> rooms[id]._apis.wide && rooms[id]._apis.wide.clear());
+  const roomPowerToggleApi = wireRoomPhotoToggle("room-power-toggle", "room-power-field",
+    "+ Add power photo", "- Hide power photo", ()=> !!rooms[id].photos.power,
+    ()=> rooms[id]._apis.power && rooms[id]._apis.power.clear());
+  const roomExtraToggleApi = wireRoomPhotoToggle("room-extra-toggle", "room-extra-field",
+    "+ Add extra photos", "- Hide extra photos", ()=> (rooms[id].extraPhotos || []).some(Boolean),
+    ()=> rooms[id]._extraApi && rooms[id]._extraApi.clearAll());
+  const roomNotesToggleApi = wireRoomPhotoToggle("room-notes-toggle", "room-notes-field",
+    "+ Add notes", "- Hide notes", ()=> !!(rooms[id].notes && rooms[id].notes.trim()),
+    ()=> { rooms[id].notes = ""; const ta = wrap.querySelector(".rt-notes"); if(ta) ta.value = ""; });
+  rooms[id]._expandMorePhotosIfNeeded = ()=>{
+    roomWideToggleApi.expandIfNeeded();
+    roomPowerToggleApi.expandIfNeeded();
+    roomExtraToggleApi.expandIfNeeded();
+    roomNotesToggleApi.expandIfNeeded();
+  };
 
   rooms[id]._extraApi = wireExtraPhotos(id, wrap);
 
@@ -1136,7 +1256,28 @@ function wireExtraPhotos(roomId, wrap){
     fileInput.value = "";
   });
 
-  return { addCard };
+  function clearAll(){
+    rooms[roomId].extraPhotos = [];
+    grid.innerHTML = "";
+  }
+
+  return { addCard, clearAll };
+}
+
+// Wires a compact "Yes / No" segmented toggle (used in place of a <select> for quick one-tap
+// answers). containerEl is the .seg-toggle wrapper holding two .seg-btn buttons. Clicking a
+// button sets the active state and fires onChange(val); returns setValue() for draft-restore.
+function wireSegToggle(containerEl, onChange){
+  const buttons = Array.from(containerEl.querySelectorAll(".seg-btn"));
+  function setValue(val, fire){
+    containerEl.dataset.value = val || "";
+    buttons.forEach(b => b.classList.toggle("active", !!val && b.dataset.val === val));
+    if(fire) onChange(val);
+  }
+  buttons.forEach(b=>{
+    b.addEventListener("click", ()=> setValue(b.dataset.val, true));
+  });
+  return { setValue };
 }
 
 // Wires a photo slot's "Take Photo" (camera) and "Upload" (file picker) buttons, plus an
@@ -1166,9 +1307,15 @@ function wirePhotoSlot(slotEl, onFile){
     annBtn.addEventListener("click", ()=>{
       openAnnotateModal(file, (blob)=>{ setFile(blob, true); });
     });
+    const rmBtn = document.createElement("button");
+    rmBtn.type = "button";
+    rmBtn.className = "ann-btn danger";
+    rmBtn.textContent = "✕ Remove";
+    rmBtn.addEventListener("click", ()=>{ clear(); maybeAutoSave(); });
     preview.appendChild(img);
     preview.appendChild(fname);
     preview.appendChild(annBtn);
+    preview.appendChild(rmBtn);
     takeBtn.textContent = "📷 Retake";
     uploadBtn.textContent = "🖼️ Replace";
     if(!restored) maybeAutoSave();
@@ -1277,14 +1424,61 @@ const networkSlotApis = {};
   networkSlotApis[key] = wirePhotoSlot(slotEl, file => { networkPhotos[key] = file; });
 });
 
+// Each network photo gets its own separate toggle -- independent of the others, so none of them
+// block export and none is shown by default unless the surveyor chooses to add it.
+function wireNetworkPhotoToggle(toggleId, fieldId, key, showText, hideText){
+  const toggle = document.getElementById(toggleId);
+  const field = document.getElementById(fieldId);
+  field.style.position = "relative";
+  const delBtn = document.createElement("button");
+  delBtn.type = "button";
+  delBtn.className = "addon-del-btn";
+  delBtn.textContent = "✕";
+  delBtn.title = "Remove";
+  field.appendChild(delBtn);
+  function collapse(){
+    field.style.display = "none";
+    toggle.textContent = showText;
+  }
+  toggle.addEventListener("click", ()=>{
+    const isHidden = field.style.display === "none";
+    field.style.display = isHidden ? "" : "none";
+    toggle.textContent = isHidden ? hideText : showText;
+  });
+  delBtn.addEventListener("click", ()=>{
+    if(!confirm("Remove this photo? This can't be undone.")) return;
+    if(networkSlotApis[key]) networkSlotApis[key].clear();
+    collapse();
+    maybeAutoSave();
+  });
+  return {
+    expandIfNeeded(){
+      if(networkPhotos[key]){ field.style.display = ""; toggle.textContent = hideText; }
+    },
+    collapse
+  };
+}
+const signalPhotoToggleApi = wireNetworkPhotoToggle("signalPhotoToggle", "slot-signal", "signal",
+  "+ Add signal strength photo", "- Hide signal strength photo");
+const optionalPhotoToggleApi = wireNetworkPhotoToggle("optionalPhotoToggle", "slot-optional", "optional",
+  "+ Add optional attachment", "- Hide optional attachment");
+const speedtestPhotoToggleApi = wireNetworkPhotoToggle("speedtestPhotoToggle", "slot-speedtest", "speedtest",
+  "+ Add speed test screenshot", "- Hide speed test screenshot");
+function expandNetworkPhotosIfNeeded(){
+  signalPhotoToggleApi.expandIfNeeded();
+  optionalPhotoToggleApi.expandIfNeeded();
+  speedtestPhotoToggleApi.expandIfNeeded();
+  netNotesToggleApi.expandIfNeeded();
+}
+
 // start with one room card ready to go
 addRoom();
 
 // --- Save Draft / Resume from Draft ---
 // No browser storage is used here on purpose — the draft is an explicit file the surveyor
 // downloads and re-opens later, so progress survives closing the tab, switching devices, etc.
-const SIMPLE_FIELD_IDS = ["locId","locName","officeHours","street","suite","city","state","zip",
-  "pocName","pocTitle","pocEmail","pocPhone","bestDay","bestTime","installDate","surveyDate",
+const SIMPLE_FIELD_IDS = ["locId","locName","officeHours","officeHoursOther","street","suite","city","state","zip","hcpCount",
+  "pocName","pocTitle","pocEmail","pocPhone","prefDate1","prefTime1","prefDate2","prefTime2","installNotes","installDate","surveyDate",
   "survName","source","survCompany","survEmail","survPhone",
   "netType","ssid","wifiPass","captivePortal","speedTest","carrier","dataCloset","netNotes"];
 
@@ -1324,7 +1518,7 @@ async function buildDraftBlob(){
 
   Object.keys(rooms).forEach(id=>{
     const r = rooms[id];
-    const entry = { id, type: r.type, name: r.name, notes: r.notes, outletOk: r.outletOk, outletsNeeded: r.outletsNeeded, photos: {} };
+    const entry = { id, type: r.type, name: r.name, notes: r.notes, outletOk: r.outletOk, outletsNeeded: r.outletsNeeded, screenSize: r.screenSize, photos: {} };
     ROOM_PHOTO_SLOTS.forEach(slot=>{
       const file = r.photos[slot.key];
       if(file){
@@ -1447,6 +1641,11 @@ document.getElementById("draftFileInput").addEventListener("change", async ()=>{
       if(el && manifest.fields && manifest.fields[id] !== undefined) el.value = manifest.fields[id];
     });
     updateCompanyDependentFields();
+    updateOfficeHoursField();
+    // Auto-expand any optional sections that actually have values in this draft, so restored
+    // data is never left hidden behind a collapsed "+ Add ..." toggle.
+    [pocTitleToggleApi, pocEmailToggleApi, pocPhoneToggleApi, prefOption2ToggleApi, installNotesToggleApi, survEmailToggleApi, survPhoneToggleApi]
+      .forEach(api => api.expandIfNeeded());
     document.getElementById("signatureConfirm").checked = !!manifest.signatureConfirm;
 
     // clear existing rooms
@@ -1463,10 +1662,12 @@ document.getElementById("draftFileInput").addEventListener("change", async ()=>{
       rooms[id].notes = entry.notes || "";
       rooms[id].outletOk = entry.outletOk || "";
       rooms[id].outletsNeeded = entry.outletsNeeded || "";
+      rooms[id].screenSize = entry.screenSize || "";
       wrap.querySelector(".rt-type").value = rooms[id].type;
       wrap.querySelector(".rt-name").value = rooms[id].name;
-      wrap.querySelector(".rt-outlet").value = rooms[id].outletOk;
-      wrap.querySelector(".rt-outlets-needed").value = rooms[id].outletsNeeded;
+      rooms[id]._outletToggleApi.setValue(rooms[id].outletOk);
+      rooms[id]._outletsNeededToggleApi.setValue(rooms[id].outletsNeeded);
+      rooms[id]._updateScreenSizeField();
       wrap.querySelector(".rt-notes").value = rooms[id].notes;
       wrap.querySelector(".ada-note").style.display = (rooms[id].type === "Exam Room") ? "block" : "none";
       const restoredName = (rooms[id].name || "").trim();
@@ -1487,6 +1688,7 @@ document.getElementById("draftFileInput").addEventListener("change", async ()=>{
         const blob = await zEntry.async("blob");
         if(rooms[id]._extraApi) rooms[id]._extraApi.addCard(blob, true);
       }
+      if(rooms[id]._expandMorePhotosIfNeeded) rooms[id]._expandMorePhotosIfNeeded();
     }
     updateRoomBadge();
 
@@ -1498,6 +1700,7 @@ document.getElementById("draftFileInput").addEventListener("change", async ()=>{
       const blob = await zEntry.async("blob");
       if(networkSlotApis[key]) networkSlotApis[key].setFile(blob, true);
     }
+    expandNetworkPhotosIfNeeded();
 
     const savedFactors = new Set(manifest.complexityFactors || []);
     document.querySelectorAll(".cf-check").forEach(cb=>{ cb.checked = savedFactors.has(cb.value); });
@@ -1561,9 +1764,6 @@ async function buildSubmissionPackage(){
     ROOM_PHOTO_SLOTS.forEach(slot=>{
       if(slot.required && !r.photos[slot.key]) missingFields.push(`${slot.label} photo (${roomLabel})`);
     });
-    // Every room needs at least one photo (any of the three slots) -- not all three individually.
-    const hasAnyPhoto = ROOM_PHOTO_SLOTS.some(slot => !!r.photos[slot.key]);
-    if(!hasAnyPhoto) missingFields.push(`At least one photo needs to be added (${roomLabel})`);
   });
 
   if(missingFields.length){
@@ -1590,8 +1790,11 @@ async function buildSubmissionPackage(){
   for(const id of roomIds){
     const r = rooms[id];
     const roomName = r.name || r.type;
-    const roomFolderName = `${r.type} - ${safeName(roomName)}`;
-    const roomNamePrefix = safeName(roomName).replace(/\s+/g,"");
+    // Photo/folder naming is always led by Room Type, with the Room Name/Number appended only
+    // when the surveyor actually entered one -- avoids "Exam Room - Exam Room" when it's blank.
+    const photoLabel = r.name ? `${r.type} ${r.name}` : r.type;
+    const roomFolderName = safeName(photoLabel);
+    const roomNamePrefix = safeName(photoLabel).replace(/\s+/g,"");
 
     const photoPaths = {};
     for(const slot of ROOM_PHOTO_SLOTS){
@@ -1617,7 +1820,7 @@ async function buildSubmissionPackage(){
     else if(r.type === "Waiting Room") waitCount++;
     else if(r.type === "Break Room" || r.type === "Back Office") backCount++;
 
-    roomRows.push([r.type, roomName, r.outletOk, r.outletsNeeded, photoPaths.wide, photoPaths.mount, photoPaths.power, r.notes]);
+    roomRows.push([r.type, roomName, r.screenSize ? `${r.screenSize}"` : "", r.outletOk, r.outletsNeeded, photoPaths.wide, photoPaths.mount, photoPaths.power, r.notes]);
   }
 
   // network photos at site-folder root
@@ -1653,11 +1856,14 @@ async function buildSubmissionPackage(){
   // tab in the tracker -- Room Photos Detail was merged into it. If there are no rooms yet,
   // still emit exactly one row (with the room columns blank) so the site itself shows up.
   const siteFieldsRow = [
-    document.getElementById("locId").value.trim(), locName, document.getElementById("street").value.trim(),
+    document.getElementById("locId").value.trim(), locName,
+    document.getElementById("street").value.trim(),
     document.getElementById("suite").value.trim(), document.getElementById("city").value.trim(),
     document.getElementById("state").value.trim().toUpperCase(), document.getElementById("zip").value.trim(),
-    document.getElementById("officeHours").value.trim(), document.getElementById("bestDay").value.trim(),
-    document.getElementById("bestTime").value.trim(),
+    getOfficeHoursValue(), document.getElementById("hcpCount").value.trim(),
+    document.getElementById("prefDate1").value || "", document.getElementById("prefTime1").value.trim(),
+    document.getElementById("prefDate2").value || "", document.getElementById("prefTime2").value.trim(),
+    document.getElementById("installNotes").value.trim(),
     surveyDate, document.getElementById("installDate").value || "",
     document.getElementById("pocName").value.trim(), document.getElementById("pocTitle").value.trim(),
     document.getElementById("pocEmail").value.trim(), document.getElementById("pocPhone").value.trim(),
@@ -1672,17 +1878,19 @@ async function buildSubmissionPackage(){
   ];
 
   const mergedHeader = ["Location ID","Location Name","Street Address","Suite / Unit","City","State","ZIP",
-    "Office Hours","Best Install Day(s)","Best Install Time","Survey Date","Proposed Install Date",
-    "POC Name","POC Title / Role","POC Email","POC Phone",
+    "Office Hours","Number of HCPs",
+    "Preferred Date - Option 1","Preferred Time - Option 1","Preferred Date - Option 2","Preferred Time - Option 2","Install Scheduling Notes",
+    "Survey Date","Proposed Install Date",
+    "Onsite POC Name","Onsite POC Title / Role","Onsite POC Email","Onsite POC Phone",
     "Surveyor Name","Surveyor Company / Organization","Surveyor Email","Surveyor Phone",
     "Exam Room Count","Waiting Room Count","Break Room / Back Office Count",
     "Network Type","Wi-Fi SSID","Wi-Fi Password","Captive Portal on Network","Speed Test Results","Speed Test Screenshot","Best Carrier","Data Closet Access",
     "Signal Strength Photo","Optional Attachments Photo","Additional Notes","Site Photo Folder","Company","Submission Timestamp",
     "Map Link","Signature Confirmed","Case Complexity","Complexity Factors",
-    "Room Type","Room Name / Number","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed","Wide Shot Photo",
-    "Mounting Wall & Ceiling Photo","Power Requirements Photo","Room Notes"];
+    "Room Type","Room Name / Number","Screen Size","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed","Environmental Photo",
+    "Mounting Wall Photo","Power Requirements Photo","Room Notes"];
 
-  const blankRoomFields = ["","","","","","","",""];
+  const blankRoomFields = ["","","","","","","","",""];
   const mergedRows = roomRows.length ? roomRows.map(rr => [...siteFieldsRow, ...rr]) : [[...siteFieldsRow, ...blankRoomFields]];
 
   // Five focused tabs instead of one wide single-row summary: General Info, Rooms, Network,
@@ -1690,29 +1898,24 @@ async function buildSubmissionPackage(){
   // "All Combined" is the same full per-room feed as before, unchanged, still matching the
   // tracker's Sites Overview tab 1:1 for pasting.
   const generalInfoHeader = ["Location ID","Location Name","Street Address","Suite / Unit","City","State","ZIP",
-    "Office Hours","Best Install Day(s)","Best Install Time","Survey Date","Proposed Install Date",
-    "POC Name","POC Title / Role","POC Email","POC Phone",
+    "Office Hours","Number of HCPs",
+    "Preferred Date - Option 1","Preferred Time - Option 1","Preferred Date - Option 2","Preferred Time - Option 2","Install Scheduling Notes",
+    "Survey Date","Proposed Install Date",
+    "Onsite POC Name","Onsite POC Title / Role","Onsite POC Email","Onsite POC Phone",
     "Surveyor Name","Surveyor Company / Organization","Surveyor Email","Surveyor Phone",
     "Exam Room Count","Waiting Room Count","Break Room / Back Office Count",
     "Site Photo Folder","Company","Submission Timestamp","Map Link","Signature Confirmed"];
-  const generalInfoRow = [
-    siteFieldsRow[0], siteFieldsRow[1], siteFieldsRow[2], siteFieldsRow[3], siteFieldsRow[4], siteFieldsRow[5], siteFieldsRow[6],
-    siteFieldsRow[7], siteFieldsRow[8], siteFieldsRow[9], siteFieldsRow[10], siteFieldsRow[11],
-    siteFieldsRow[12], siteFieldsRow[13], siteFieldsRow[14], siteFieldsRow[15],
-    siteFieldsRow[16], siteFieldsRow[17], siteFieldsRow[18], siteFieldsRow[19],
-    siteFieldsRow[20], siteFieldsRow[21], siteFieldsRow[22],
-    siteFieldsRow[34], siteFieldsRow[35], siteFieldsRow[36], siteFieldsRow[37], siteFieldsRow[38],
-  ];
+  const generalInfoRow = siteFieldsRow.slice(0, 27).concat(siteFieldsRow.slice(38, 43));
 
-  const roomsHeader = ["Location ID","Room Type","Room Name / Number","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed",
-    "Wide Shot Photo","Mounting Wall & Ceiling Photo","Power Requirements Photo","Room Notes"];
+  const roomsHeader = ["Location ID","Room Type","Room Name / Number","Screen Size","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed",
+    "Environmental Photo","Mounting Wall Photo","Power Requirements Photo","Room Notes"];
   const roomsRows = roomRows.length
     ? roomRows.map(rr => [siteFieldsRow[0], ...rr])
     : [[siteFieldsRow[0], ...blankRoomFields]];
 
   const networkHeader = ["Network Type","Wi-Fi SSID","Wi-Fi Password","Captive Portal on Network","Speed Test Results",
     "Speed Test Screenshot","Best Carrier","Data Closet Access","Signal Strength Photo","Optional Attachments Photo","Additional Notes"];
-  const networkRow = siteFieldsRow.slice(23, 34);
+  const networkRow = siteFieldsRow.slice(27, 38);
 
   // Only show what's actually applicable to this site -- the overall result, plus whichever
   // factors were actually checked. Nothing is listed for factors that don't apply here.
@@ -1739,6 +1942,58 @@ async function buildSubmissionPackage(){
   statusEl.textContent = "";
   return { siteFolder, submitFolderName, survNameForFile, roomCount: roomIds.length, files };
 }
+
+// Generic "+ Add X" / "- Hide X" toggle: reveals a field (or group of fields) only when needed,
+// so optional sections that aren't always used don't clutter the form by default. expandIfNeeded()
+// is used when restoring a draft so any previously-entered values are never left hidden.
+function wireToggleField(toggleId, fieldId, showText, hideText){
+  const toggle = document.getElementById(toggleId);
+  const field = document.getElementById(fieldId);
+  field.style.position = "relative";
+  const delBtn = document.createElement("button");
+  delBtn.type = "button";
+  delBtn.className = "addon-del-btn";
+  delBtn.textContent = "✕";
+  delBtn.title = "Remove";
+  field.appendChild(delBtn);
+  function clearField(){
+    field.querySelectorAll("input,select,textarea").forEach(el=>{
+      if(el.tagName === "SELECT") el.selectedIndex = 0;
+      else el.value = "";
+    });
+    field.querySelectorAll('input[id$="Other"]').forEach(el=> el.style.display = "none");
+  }
+  toggle.addEventListener("click", ()=>{
+    const isHidden = field.style.display === "none";
+    field.style.display = isHidden ? "" : "none";
+    toggle.textContent = isHidden ? hideText : showText;
+  });
+  delBtn.addEventListener("click", ()=>{
+    if(!confirm("Remove this and clear what you entered? This can't be undone.")) return;
+    clearField();
+    field.style.display = "none";
+    toggle.textContent = showText;
+    maybeAutoSave();
+  });
+  return {
+    expandIfNeeded(){
+      const hasValue = Array.from(field.querySelectorAll("input,select,textarea")).some(el => el.value);
+      if(hasValue){ field.style.display = ""; toggle.textContent = hideText; }
+    },
+    collapse(){
+      field.style.display = "none";
+      toggle.textContent = showText;
+    }
+  };
+}
+const pocTitleToggleApi = wireToggleField("pocTitleToggle", "pocTitleField", "+ Add title", "- Hide title");
+const pocEmailToggleApi = wireToggleField("pocEmailToggle", "pocEmailField", "+ Add email", "- Hide email");
+const pocPhoneToggleApi = wireToggleField("pocPhoneToggle", "pocPhoneField", "+ Add phone", "- Hide phone");
+const prefOption2ToggleApi = wireToggleField("prefOption2Toggle", "prefOption2Fields", "+ Add another preferred date/time", "- Hide second preferred date/time");
+const installNotesToggleApi = wireToggleField("installNotesToggle", "installNotesField", "+ Add notes", "- Hide notes");
+const survEmailToggleApi = wireToggleField("survEmailToggle", "survEmailField", "+ Add email", "- Hide email");
+const survPhoneToggleApi = wireToggleField("survPhoneToggle", "survPhoneField", "+ Add phone", "- Hide phone");
+const netNotesToggleApi = wireToggleField("netNotesToggle", "netNotesField", "+ Add notes", "- Hide notes");
 
 document.getElementById("downloadHelpToggle").addEventListener("click", ()=>{
   const box = document.getElementById("downloadHelpText");
@@ -1796,9 +2051,11 @@ document.getElementById("startNewBtn").addEventListener("click", ()=>{
   SIMPLE_FIELD_IDS.forEach(id=>{ document.getElementById(id).value = ""; });
   document.getElementById("signatureConfirm").checked = false;
   updateCompanyDependentFields();
+  updateOfficeHoursField();
   updateNetworkFields();
   updateMapLink();
-  hideSuggestions();
+  [pocTitleToggleApi, pocEmailToggleApi, pocPhoneToggleApi, prefOption2ToggleApi, installNotesToggleApi, survEmailToggleApi, survPhoneToggleApi]
+    .forEach(api => api.collapse());
 
   Object.keys(rooms).forEach(k=> delete rooms[k]);
   document.getElementById("roomsContainer").innerHTML = "";
@@ -1809,6 +2066,10 @@ document.getElementById("startNewBtn").addEventListener("click", ()=>{
     networkPhotos[key] = null;
     if(networkSlotApis[key]) networkSlotApis[key].clear();
   });
+  signalPhotoToggleApi.collapse();
+  optionalPhotoToggleApi.collapse();
+  speedtestPhotoToggleApi.collapse();
+  netNotesToggleApi.collapse();
 
   autoLinkTouched.clear();
   document.querySelectorAll(".cf-check").forEach(cb=>{ cb.checked = false; });
