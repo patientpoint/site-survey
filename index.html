@@ -29,6 +29,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   *{transition:background-color .15s ease, border-color .15s ease, box-shadow .15s ease, color .15s ease;}
   html{scroll-behavior:smooth;}
   body{margin:0;padding-bottom:62px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+  .unsaved-banner{position:fixed;top:0;left:0;right:0;z-index:700;background:#fff3cd;color:#5c4600;border-bottom:1px solid #f2c94c;text-align:center;font-size:12px;font-weight:bold;padding:8px 10px;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+  body.has-unsaved-banner{padding-top:34px;}
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
   header{background:linear-gradient(135deg,var(--navy),var(--navy-dark));color:#fff;padding:16px 20px;border-bottom:3px solid var(--gold);box-shadow:0 2px 6px rgba(0,0,0,0.15);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px 16px;}
   .header-brand{flex:1 1 220px;min-width:200px;}
@@ -49,10 +51,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   section.card h2{margin:0 0 14px;font-size:16px;color:var(--navy);border-bottom:2px solid var(--gold);padding-bottom:9px;}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  .grid > *, .grid3 > *{min-width:0;}
   @media (max-width:600px){.grid,.grid3{grid-template-columns:1fr;}}
   label{display:block;font-size:12px;font-weight:bold;color:var(--muted);margin-bottom:5px;letter-spacing:0.01em;}
   input[type=text],input[type=email],input[type=tel],input[type=date],select,textarea{
-    width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:7px;font-size:16px;background:#fff;color:var(--text);
+    width:100%;max-width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:7px;font-size:16px;background:#fff;color:var(--text);box-sizing:border-box;
   }
   input[type=text]:focus,input[type=email]:focus,input[type=tel]:focus,input[type=date]:focus,select:focus,textarea:focus{
     outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,97,119,0.14);
@@ -136,6 +139,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .cf-result{margin-top:6px;padding:14px 16px;border-radius:8px;font-weight:bold;font-size:15px;text-align:center;background:#e8f5e9;color:#2e7d32;}
   .cf-result.complex{background:#ffe9d6;color:#a15c00;}
   .cf-leadership-note{margin-top:10px;padding:10px 12px;background:#fff3cd;border:1px solid #f2c94c;border-radius:6px;font-size:13px;color:#5c4600;}
+  .cf-dropdown{position:relative;}
+  .cf-dropdown-toggle{width:100%;text-align:left;padding:10px 12px;border:1px solid var(--border);border-radius:7px;background:#fff;font-size:13px;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .cf-dropdown-toggle:hover{border-color:var(--navy);}
+  .cf-dropdown-toggle.has-selection{border-color:var(--navy);color:var(--navy);font-weight:bold;}
+  .cf-dropdown-toggle .cf-dropdown-arrow{transition:transform .15s ease;flex-shrink:0;}
+  .cf-dropdown-toggle.open .cf-dropdown-arrow{transform:rotate(180deg);}
+  .cf-dropdown-panel{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:60;background:#fff;border:1px solid var(--border);border-radius:7px;box-shadow:0 6px 16px rgba(0,0,0,0.14);padding:8px;max-height:260px;overflow-y:auto;}
+  .cf-dropdown-panel .cf-list{gap:0;}
+  .cf-selected-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .cf-chip{display:inline-flex;align-items:center;gap:6px;background:#eef4fa;border:1px solid var(--border);border-radius:14px;padding:4px 6px 4px 10px;font-size:12px;color:var(--navy-dark);}
+  .cf-chip-remove{border:none;background:none;cursor:pointer;font-size:13px;line-height:1;color:inherit;padding:0 2px;}
   .room-count-badge{background:var(--navy);color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;margin-left:8px;}
   .footer-actions{margin-top:6px;}
   .status{margin-top:10px;font-size:13px;color:var(--muted);white-space:pre-line;}
@@ -239,6 +253,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 </style>
 </head>
 <body>
+<div id="unsavedBanner" class="unsaved-banner" style="display:none;">⚠️ Unsaved changes — tap Save Draft above so nothing gets lost</div>
 
 <header>
   <div class="header-brand">
@@ -278,12 +293,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <input type="text" id="street" autocomplete="off" placeholder="Street, or paste a full address here">
       </div>
       <div class="field"><label>Suite / Unit</label><input type="text" id="suite"></div>
-      <div class="field"><label>&nbsp;</label><a id="mapLink" href="#" target="_blank" rel="noopener" style="display:inline-block;padding:9px 10px;background:#eef4fa;border:1px solid var(--border);border-radius:6px;color:var(--navy);text-decoration:none;font-size:13px;">📍 View on Google Maps</a></div>
     </div>
     <div class="grid3">
       <div class="field"><label class="req">City</label><input type="text" id="city"></div>
       <div class="field"><label class="req">State</label><input type="text" id="state" maxlength="2" style="text-transform:uppercase"></div>
       <div class="field"><label class="req">ZIP</label><input type="text" id="zip"></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><a id="mapLink" href="#" target="_blank" rel="noopener" style="display:inline-block;padding:9px 10px;background:#eef4fa;border:1px solid var(--border);border-radius:6px;color:var(--navy);text-decoration:none;font-size:13px;">📍 View on Google Maps</a></div>
     </div>
     <div class="grid3">
       <div class="field">
@@ -299,61 +316,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </div>
       <div class="field"><label>Number of HCPs (doctors/providers)</label><input type="number" id="hcpCount" min="0" placeholder="e.g. 4"></div>
     </div>
-
-    <div class="subhead">Point of Contact</div>
-    <div class="grid3">
-      <div class="field"><label>Onsite POC Name</label><input type="text" id="pocName"></div>
-    </div>
-    <div class="toggle-row">
-      <button type="button" id="pocTitleToggle" class="link-toggle-inline">+ Add title</button>
-      <button type="button" id="pocEmailToggle" class="link-toggle-inline">+ Add email</button>
-      <button type="button" id="pocPhoneToggle" class="link-toggle-inline">+ Add phone</button>
-    </div>
-    <div class="grid3">
-      <div class="field" id="pocTitleField" style="display:none;"><label>Onsite POC Title / Role</label><input type="text" id="pocTitle"></div>
-      <div class="field" id="pocEmailField" style="display:none;"><label>Onsite POC Email</label><input type="email" id="pocEmail"></div>
-      <div class="field" id="pocPhoneField" style="display:none;"><label>Onsite POC Phone</label><input type="tel" id="pocPhone"></div>
-    </div>
-
-    <div class="subhead">Install Scheduling</div>
-    <div class="grid3">
-      <div class="field"><label>Preferred Date — Option 1</label><input type="date" id="prefDate1"></div>
-      <div class="field"><label>Preferred Time — Option 1</label>
-        <select id="prefTime1">
-          <option value="">Select a time window</option>
-          <option value="Before 9am">Before 9am</option>
-          <option value="9am - 12pm">9am - 12pm</option>
-          <option value="12pm - 3pm">12pm - 3pm</option>
-          <option value="3pm - 6pm">3pm - 6pm</option>
-          <option value="After 6pm">After 6pm</option>
-          <option value="After Hours">After Hours</option>
-          <option value="No preference / Flexible">No preference / Flexible</option>
-        </select>
-      </div>
-      <div class="field"><label>Proposed Install Date</label><input type="date" id="installDate"></div>
-    </div>
-    <div class="toggle-row">
-      <button type="button" id="prefOption2Toggle" class="link-toggle-inline">+ Add another preferred date/time</button>
-    </div>
-    <div class="grid3" id="prefOption2Fields" style="display:none;">
-      <div class="field"><label>Preferred Date — Option 2</label><input type="date" id="prefDate2"></div>
-      <div class="field"><label>Preferred Time — Option 2</label>
-        <select id="prefTime2">
-          <option value="">Select a time window</option>
-          <option value="Before 9am">Before 9am</option>
-          <option value="9am - 12pm">9am - 12pm</option>
-          <option value="12pm - 3pm">12pm - 3pm</option>
-          <option value="3pm - 6pm">3pm - 6pm</option>
-          <option value="After 6pm">After 6pm</option>
-          <option value="After Hours">After Hours</option>
-          <option value="No preference / Flexible">No preference / Flexible</option>
-        </select>
-      </div>
-    </div>
-    <div class="toggle-row">
-      <button type="button" id="installNotesToggle" class="link-toggle-inline">+ Add notes</button>
-    </div>
-    <div class="field" id="installNotesField" style="display:none;"><label>Install Scheduling Notes</label><textarea id="installNotes"></textarea></div>
 
     <div class="subhead">Survey Info</div>
     <div class="grid3">
@@ -374,6 +336,61 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="field" id="survEmailField" style="display:none;"><label>Surveyor Email</label><input type="email" id="survEmail" autocomplete="off"></div>
       <div class="field" id="survPhoneField" style="display:none;"><label>Surveyor Phone</label><input type="tel" id="survPhone"></div>
     </div>
+
+    <div class="subhead">Point of Contact</div>
+    <div class="grid3">
+      <div class="field"><label>Onsite POC Name</label><input type="text" id="pocName"></div>
+    </div>
+    <div class="toggle-row">
+      <button type="button" id="pocTitleToggle" class="link-toggle-inline">+ Add title</button>
+      <button type="button" id="pocEmailToggle" class="link-toggle-inline">+ Add email</button>
+      <button type="button" id="pocPhoneToggle" class="link-toggle-inline">+ Add phone</button>
+    </div>
+    <div class="grid3">
+      <div class="field" id="pocTitleField" style="display:none;"><label>Onsite POC Title / Role</label><input type="text" id="pocTitle"></div>
+      <div class="field" id="pocEmailField" style="display:none;"><label>Onsite POC Email</label><input type="email" id="pocEmail"></div>
+      <div class="field" id="pocPhoneField" style="display:none;"><label>Onsite POC Phone</label><input type="tel" id="pocPhone"></div>
+    </div>
+
+    <div class="subhead">Install Scheduling</div>
+    <div class="grid3">
+      <div class="field"><label>Preferred Install Date — Option 1</label><input type="date" id="prefDate1"></div>
+      <div class="field"><label>Preferred Time — Option 1</label>
+        <select id="prefTime1">
+          <option value="">Select a time window</option>
+          <option value="Before 9am">Before 9am</option>
+          <option value="9am - 12pm">9am - 12pm</option>
+          <option value="12pm - 3pm">12pm - 3pm</option>
+          <option value="3pm - 6pm">3pm - 6pm</option>
+          <option value="After 6pm">After 6pm</option>
+          <option value="After Hours">After Hours</option>
+          <option value="No preference / Flexible">No preference / Flexible</option>
+        </select>
+      </div>
+      <div class="field"><label>Proposed Install Date</label><input type="date" id="installDate"></div>
+    </div>
+    <div class="toggle-row">
+      <button type="button" id="prefOption2Toggle" class="link-toggle-inline">+ Add another preferred install date/time</button>
+    </div>
+    <div class="grid3" id="prefOption2Fields" style="display:none;">
+      <div class="field"><label>Preferred Install Date — Option 2</label><input type="date" id="prefDate2"></div>
+      <div class="field"><label>Preferred Time — Option 2</label>
+        <select id="prefTime2">
+          <option value="">Select a time window</option>
+          <option value="Before 9am">Before 9am</option>
+          <option value="9am - 12pm">9am - 12pm</option>
+          <option value="12pm - 3pm">12pm - 3pm</option>
+          <option value="3pm - 6pm">3pm - 6pm</option>
+          <option value="After 6pm">After 6pm</option>
+          <option value="After Hours">After Hours</option>
+          <option value="No preference / Flexible">No preference / Flexible</option>
+        </select>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <button type="button" id="installNotesToggle" class="link-toggle-inline">+ Add notes</button>
+    </div>
+    <div class="field" id="installNotesField" style="display:none;"><label>Install Scheduling Notes</label><textarea id="installNotes"></textarea></div>
   </section>
 
   <section class="card" id="section-rooms">
@@ -472,41 +489,68 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   <section class="card" id="section-complexity">
     <h2>4. Complexity Assessment</h2>
-    <p class="hint" style="margin-top:-4px;">Check every factor that applies to this site — the result below updates automatically.</p>
+    <p class="hint" style="margin-top:-4px;">Pick every factor that applies to this site from each dropdown — the result below updates automatically.</p>
 
     <div class="cf-group">
       <h3 class="cf-group-title">Hard Stop Factors <span class="cf-group-note">(any single factor = Complex)</span></h3>
-      <div class="cf-list">
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="5+ devices / multi-day install"> 5+ devices / multi-day install</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Non-standard wall type"> Non-standard wall type</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Outlet distance 36-90&quot; or non-standard outlet"> Outlet distance 36-90" or non-standard outlet</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Electrical work needed"> Electrical work needed</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Hardline only / blocked ports / weak signal"> Hardline only / blocked ports / weak signal</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="No in-house IT contact"> No in-house IT contact</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Narrow install window / pilot needed for large install"> Narrow install window / pilot needed for large install</label>
+      <div class="cf-dropdown">
+        <button type="button" class="cf-dropdown-toggle" id="cfToggle-hard">
+          <span id="cfToggleLabel-hard">Select factors...</span>
+          <span class="cf-dropdown-arrow">▾</span>
+        </button>
+        <div class="cf-dropdown-panel" id="cfPanel-hard" style="display:none;">
+          <div class="cf-list">
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="5+ devices / multi-day install"> 5+ devices / multi-day install</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Non-standard wall type"> Non-standard wall type</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Outlet distance 36-90&quot; or non-standard outlet"> Outlet distance 36-90" or non-standard outlet</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Electrical work needed"> Electrical work needed</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Hardline only / blocked ports / weak signal"> Hardline only / blocked ports / weak signal</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="No in-house IT contact"> No in-house IT contact</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Narrow install window / pilot needed for large install"> Narrow install window / pilot needed for large install</label>
+          </div>
+        </div>
       </div>
+      <div class="cf-selected-chips" id="cfChips-hard"></div>
     </div>
 
     <div class="cf-group">
       <h3 class="cf-group-title">Soft Flag Factors <span class="cf-group-note">(two or more = Complex)</span></h3>
-      <div class="cf-list">
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Close to corner / under 75% sightline"> Close to corner / under 75% sightline</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Landlord permit required"> Landlord permit required</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="No stands allowed"> No stands allowed</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Planned competitor removal"> Planned competitor removal</label>
+      <div class="cf-dropdown">
+        <button type="button" class="cf-dropdown-toggle" id="cfToggle-soft">
+          <span id="cfToggleLabel-soft">Select factors...</span>
+          <span class="cf-dropdown-arrow">▾</span>
+        </button>
+        <div class="cf-dropdown-panel" id="cfPanel-soft" style="display:none;">
+          <div class="cf-list">
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Close to corner / under 75% sightline"> Close to corner / under 75% sightline</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Landlord permit required"> Landlord permit required</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="No stands allowed"> No stands allowed</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Planned competitor removal"> Planned competitor removal</label>
+          </div>
+        </div>
       </div>
+      <div class="cf-selected-chips" id="cfChips-soft"></div>
     </div>
 
     <div class="cf-group">
       <h3 class="cf-group-title">Blocked Factors <span class="cf-group-note">(any single factor = Complex)</span></h3>
-      <div class="cf-list">
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No studs or rounded walls"> No studs or rounded walls</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Close to a water source"> Close to a water source</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No panel access / two-prong ungrounded outlet"> No panel access / two-prong ungrounded outlet</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No Cradlepoint or network, can't whitelist splash page"> No Cradlepoint or network, can't whitelist splash page</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Placement Agreement rejected"> Placement Agreement rejected</label>
-        <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Expensive renovations required (no studs)"> Expensive renovations required (no studs)</label>
+      <div class="cf-dropdown">
+        <button type="button" class="cf-dropdown-toggle" id="cfToggle-blocked">
+          <span id="cfToggleLabel-blocked">Select factors...</span>
+          <span class="cf-dropdown-arrow">▾</span>
+        </button>
+        <div class="cf-dropdown-panel" id="cfPanel-blocked" style="display:none;">
+          <div class="cf-list">
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No studs or rounded walls"> No studs or rounded walls</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Close to a water source"> Close to a water source</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No panel access / two-prong ungrounded outlet"> No panel access / two-prong ungrounded outlet</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="No Cradlepoint or network, can't whitelist splash page"> No Cradlepoint or network, can't whitelist splash page</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Placement Agreement rejected"> Placement Agreement rejected</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="blocked" value="Expensive renovations required (no studs)"> Expensive renovations required (no studs)</label>
+          </div>
+        </div>
       </div>
+      <div class="cf-selected-chips" id="cfChips-blocked"></div>
     </div>
 
     <div class="cf-result" id="cfResult"><span id="cfResultLabel">✅ Simple</span></div>
@@ -1367,8 +1411,72 @@ function computeComplexity(){
 
   document.getElementById("cfLeadershipNote").style.display = (result === "Simple") ? "none" : "block";
 
+  renderCfChips();
+
   return { result, factors: checked.map(c=>c.value) };
 }
+
+// Each tier (hard/soft/blocked) is picked from its own dropdown instead of an always-visible
+// checkbox grid, to save vertical space -- the checkboxes still live inside the dropdown panel
+// (so all the existing .cf-check based logic above needs no changes), and whatever's picked is
+// echoed right below as small removable chips so the surveyor can see the selection without
+// reopening the dropdown.
+const CF_TIERS = ["hard", "soft", "blocked"];
+function renderCfChips(){
+  CF_TIERS.forEach(tier=>{
+    const chipsEl = document.getElementById("cfChips-" + tier);
+    const toggleEl = document.getElementById("cfToggle-" + tier);
+    const toggleLabelEl = document.getElementById("cfToggleLabel-" + tier);
+    if(!chipsEl || !toggleEl) return;
+    const checks = Array.from(document.querySelectorAll(`.cf-check[data-tier="${tier}"]`));
+    const checked = checks.filter(c=>c.checked);
+    chipsEl.innerHTML = "";
+    checked.forEach(cb=>{
+      const chip = document.createElement("span");
+      chip.className = "cf-chip tier-" + tier;
+      const text = document.createElement("span");
+      text.textContent = cb.value;
+      chip.appendChild(text);
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "cf-chip-remove";
+      removeBtn.setAttribute("aria-label", "Remove " + cb.value);
+      removeBtn.textContent = "✕";
+      removeBtn.addEventListener("click", ()=>{
+        cb.checked = false;
+        cb.dispatchEvent(new Event("change"));
+      });
+      chip.appendChild(removeBtn);
+      chipsEl.appendChild(chip);
+    });
+    toggleLabelEl.textContent = checked.length ? `${checked.length} factor${checked.length===1?"":"s"} selected` : "Select factors...";
+    toggleEl.classList.toggle("has-selection", checked.length > 0);
+  });
+}
+function closeAllCfDropdowns(except){
+  CF_TIERS.forEach(tier=>{
+    if(tier === except) return;
+    const panel = document.getElementById("cfPanel-" + tier);
+    const toggle = document.getElementById("cfToggle-" + tier);
+    if(panel) panel.style.display = "none";
+    if(toggle) toggle.classList.remove("open");
+  });
+}
+CF_TIERS.forEach(tier=>{
+  const toggle = document.getElementById("cfToggle-" + tier);
+  const panel = document.getElementById("cfPanel-" + tier);
+  if(!toggle || !panel) return;
+  toggle.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    const isOpen = panel.style.display !== "none";
+    closeAllCfDropdowns();
+    panel.style.display = isOpen ? "none" : "block";
+    toggle.classList.toggle("open", !isOpen);
+  });
+  panel.addEventListener("click", (e)=> e.stopPropagation());
+});
+document.addEventListener("click", ()=> closeAllCfDropdowns());
+
 document.querySelectorAll(".cf-check").forEach(cb=>{
   cb.addEventListener("change", ()=>{
     autoLinkTouched.add(cb); // a manual click always wins from here on, even for auto-linked boxes
@@ -1497,9 +1605,19 @@ function setDraftStatus(msg, isError){
 // by design (a security restriction all browsers enforce), but it's exactly the safety net that
 // matters here: don't let a closed tab silently erase a site visit.
 let formDirty = false;
+// Mobile browsers largely ignore/suppress the beforeunload confirmation dialog below (a platform
+// restriction, not a bug), so this on-screen banner is the real safety net there: it stays visible
+// the whole time there's unsaved work, as a persistent visual nudge to tap Save Draft, regardless
+// of whether the browser's own "leave site?" prompt ever gets a chance to show.
+function setFormDirty(val){
+  formDirty = val;
+  const banner = document.getElementById("unsavedBanner");
+  if(banner) banner.style.display = val ? "block" : "none";
+  document.body.classList.toggle("has-unsaved-banner", val);
+}
 const mainEl = document.querySelector("main");
-mainEl.addEventListener("input", ()=>{ formDirty = true; });
-mainEl.addEventListener("change", ()=>{ formDirty = true; });
+mainEl.addEventListener("input", ()=>{ setFormDirty(true); });
+mainEl.addEventListener("change", ()=>{ setFormDirty(true); });
 window.addEventListener("beforeunload", (e)=>{
   if(!formDirty) return;
   e.preventDefault();
@@ -1567,7 +1685,7 @@ async function doAutoSave(){
     await writable.write(blob);
     await writable.close();
     setDraftStatus("Auto-saved at " + new Date().toLocaleTimeString());
-    formDirty = false;
+    setFormDirty(false);
   }catch(e){
     setDraftStatus("Auto-save failed: " + e.message, true);
   }
@@ -1576,6 +1694,41 @@ async function doAutoSave(){
 function maybeAutoSave(){
   if(autoSaveHandle) doAutoSave();
 }
+
+// --- Background safety-net save ---
+// visibilitychange/pagehide fire far more reliably on mobile than beforeunload does, so this is
+// the real protection behind the on-screen "Unsaved changes" banner: the instant the tab gets
+// backgrounded (app switch, screen lock) or the page starts tearing down, save right now if
+// there's anything unsaved. If a synced auto-save folder is already picked, this writes to it
+// silently, same as the periodic auto-save. Otherwise (mobile/Safari/Firefox, no persistent-file
+// support), it triggers a one-time snapshot download named to start with "Draft(Unsaved)" so it's
+// obviously a safety-net file rather than a deliberate Save Draft, and easy to spot in Downloads.
+// Best-effort only: some mobile browsers block downloads that aren't a direct result of a tap, in
+// which case this silently does nothing beyond what the banner already warns about.
+async function backgroundSafetyNetSave(){
+  if(!formDirty) return;
+  if(autoSaveHandle){
+    await doAutoSave();
+    return;
+  }
+  try{
+    const blob = await buildDraftBlob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Draft(Unsaved) - ${buildSiteLabel()}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setFormDirty(false);
+  }catch(e){
+    // Nothing more we can do here -- the banner is still the fallback reminder.
+  }
+}
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden) backgroundSafetyNetSave();
+});
+window.addEventListener("pagehide", backgroundSafetyNetSave);
 
 saveDraftBtn.addEventListener("click", async ()=>{
   if(!("showSaveFilePicker" in window)){
@@ -1592,7 +1745,7 @@ saveDraftBtn.addEventListener("click", async ()=>{
       a.click();
       a.remove();
       setDraftStatus(`Draft saved — "${a.download}". Keep that file to resume later.`);
-      formDirty = false;
+      setFormDirty(false);
     }catch(e){
       setDraftStatus("Couldn't save the draft: " + e.message, true);
     }
@@ -1709,7 +1862,7 @@ document.getElementById("draftFileInput").addEventListener("change", async ()=>{
     updateMapLink();
     updateNetworkFields();
     setDraftStatus(`Draft loaded from "${file.name}" — ${(manifest.rooms||[]).length} room(s) restored.`);
-    formDirty = false;
+    setFormDirty(false);
   }catch(e){
     setDraftStatus("Couldn't load that draft: " + e.message, true);
   }
@@ -1820,7 +1973,10 @@ async function buildSubmissionPackage(){
     else if(r.type === "Waiting Room") waitCount++;
     else if(r.type === "Break Room" || r.type === "Back Office") backCount++;
 
-    roomRows.push([r.type, roomName, r.screenSize ? `${r.screenSize}"` : "", r.outletOk, r.outletsNeeded, photoPaths.wide, photoPaths.mount, photoPaths.power, r.notes]);
+    // Photo paths (photoPaths.wide/mount/power) are still computed above so the actual photo
+    // files get embedded in the zip -- they're just no longer surfaced as columns here, per
+    // request, since the photos themselves are already sitting right in the room's folder.
+    roomRows.push([r.type, roomName, r.screenSize ? `${r.screenSize}"` : "", r.outletOk, r.outletsNeeded, r.notes]);
   }
 
   // network photos at site-folder root
@@ -1855,6 +2011,19 @@ async function buildSubmissionPackage(){
   // One merged row per room (site info repeated on each), matching the single "Sites Overview"
   // tab in the tracker -- Room Photos Detail was merged into it. If there are no rooms yet,
   // still emit exactly one row (with the room columns blank) so the site itself shows up.
+  //
+  // Index map (0-based) -- kept up to date whenever a field is added/removed/reordered below,
+  // since the export-building code further down picks specific indices out of this array rather
+  // than blindly slicing/spreading the whole thing:
+  //  0 locId, 1 locName, 2 street, 3 suite, 4 city, 5 state, 6 zip, 7 officeHours, 8 hcpCount,
+  //  9 prefDate1, 10 prefTime1, 11 prefDate2, 12 prefTime2, 13 installNotes, 14 surveyDate, 15 installDate,
+  //  16 pocName, 17 pocTitle, 18 pocEmail, 19 pocPhone,
+  //  20 survName, 21 survCompany, 22 survEmail, 23 survPhone,
+  //  24 examCount, 25 waitCount, 26 backCount,
+  //  27 netType, 28 ssid, 29 wifiPass, 30 captivePortal, 31 speedTest, 32 speedTestPhotoPath, 33 carrier, 34 dataCloset,
+  //  35 signalPath, 36 optionalPath, 37 netNotes,
+  //  38 siteFolder, 39 company(source), 40 timestamp, 41 mapUrl, 42 signatureConfirmed,
+  //  43 complexityResult, 44 complexityFactorsStr
   const siteFieldsRow = [
     document.getElementById("locId").value.trim(), locName,
     document.getElementById("street").value.trim(),
@@ -1877,21 +2046,29 @@ async function buildSubmissionPackage(){
     complexity.result, complexityFactorsStr,
   ];
 
+  // siteFieldsRow still holds every value at its original index (see the numbered comment above
+  // its definition) -- Site Photo Folder(38)/Company(39)/Submission Timestamp(40)/Map Link(41)/
+  // Signature Confirmed(42) and the Signal(35)/Optional(36) photo paths are kept there because
+  // other code still needs them (folder naming, map link, gating export, embedding the actual
+  // photo files in the zip). They're just not all surfaced as spreadsheet columns below --
+  // picking exact indices here (instead of slicing/spreading the whole row) is what lets us
+  // drop a column from the export without touching how that value is produced or used elsewhere.
   const mergedHeader = ["Location ID","Location Name","Street Address","Suite / Unit","City","State","ZIP",
     "Office Hours","Number of HCPs",
-    "Preferred Date - Option 1","Preferred Time - Option 1","Preferred Date - Option 2","Preferred Time - Option 2","Install Scheduling Notes",
+    "Preferred Install Date - Option 1","Preferred Time - Option 1","Preferred Install Date - Option 2","Preferred Time - Option 2","Install Scheduling Notes",
     "Survey Date","Proposed Install Date",
     "Onsite POC Name","Onsite POC Title / Role","Onsite POC Email","Onsite POC Phone",
     "Surveyor Name","Surveyor Company / Organization","Surveyor Email","Surveyor Phone",
     "Exam Room Count","Waiting Room Count","Break Room / Back Office Count",
     "Network Type","Wi-Fi SSID","Wi-Fi Password","Captive Portal on Network","Speed Test Results","Speed Test Screenshot","Best Carrier","Data Closet Access",
-    "Signal Strength Photo","Optional Attachments Photo","Additional Notes","Site Photo Folder","Company","Submission Timestamp",
-    "Map Link","Signature Confirmed","Case Complexity","Complexity Factors",
-    "Room Type","Room Name / Number","Screen Size","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed","Environmental Photo",
-    "Mounting Wall Photo","Power Requirements Photo","Room Notes"];
+    "Additional Notes","Company","Case Complexity","Complexity Factors",
+    "Room Type","Room Name / Number","Screen Size","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed","Room Notes"];
+  const MERGED_SITE_INDICES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,
+    27,28,29,30,31,32,33,34,37,39,43,44];
+  const mergedSiteFieldsRow = MERGED_SITE_INDICES.map(i => siteFieldsRow[i]);
 
-  const blankRoomFields = ["","","","","","","","",""];
-  const mergedRows = roomRows.length ? roomRows.map(rr => [...siteFieldsRow, ...rr]) : [[...siteFieldsRow, ...blankRoomFields]];
+  const blankRoomFields = ["","","","","",""];
+  const mergedRows = roomRows.length ? roomRows.map(rr => [...mergedSiteFieldsRow, ...rr]) : [[...mergedSiteFieldsRow, ...blankRoomFields]];
 
   // Five focused tabs instead of one wide single-row summary: General Info, Rooms, Network,
   // and Complexity are each easy to scan on their own (no side-scrolling through 40+ columns);
@@ -1899,23 +2076,21 @@ async function buildSubmissionPackage(){
   // tracker's Sites Overview tab 1:1 for pasting.
   const generalInfoHeader = ["Location ID","Location Name","Street Address","Suite / Unit","City","State","ZIP",
     "Office Hours","Number of HCPs",
-    "Preferred Date - Option 1","Preferred Time - Option 1","Preferred Date - Option 2","Preferred Time - Option 2","Install Scheduling Notes",
+    "Preferred Install Date - Option 1","Preferred Time - Option 1","Preferred Install Date - Option 2","Preferred Time - Option 2","Install Scheduling Notes",
     "Survey Date","Proposed Install Date",
     "Onsite POC Name","Onsite POC Title / Role","Onsite POC Email","Onsite POC Phone",
     "Surveyor Name","Surveyor Company / Organization","Surveyor Email","Surveyor Phone",
-    "Exam Room Count","Waiting Room Count","Break Room / Back Office Count",
-    "Site Photo Folder","Company","Submission Timestamp","Map Link","Signature Confirmed"];
-  const generalInfoRow = siteFieldsRow.slice(0, 27).concat(siteFieldsRow.slice(38, 43));
+    "Exam Room Count","Waiting Room Count","Break Room / Back Office Count","Company"];
+  const generalInfoRow = siteFieldsRow.slice(0, 27).concat([siteFieldsRow[39]]);
 
-  const roomsHeader = ["Location ID","Room Type","Room Name / Number","Screen Size","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed",
-    "Environmental Photo","Mounting Wall Photo","Power Requirements Photo","Room Notes"];
+  const roomsHeader = ["Location ID","Room Type","Room Name / Number","Screen Size","Outlet Within 6 ft of Mounting Area","Additional Outlets Needed","Room Notes"];
   const roomsRows = roomRows.length
     ? roomRows.map(rr => [siteFieldsRow[0], ...rr])
     : [[siteFieldsRow[0], ...blankRoomFields]];
 
   const networkHeader = ["Network Type","Wi-Fi SSID","Wi-Fi Password","Captive Portal on Network","Speed Test Results",
-    "Speed Test Screenshot","Best Carrier","Data Closet Access","Signal Strength Photo","Optional Attachments Photo","Additional Notes"];
-  const networkRow = siteFieldsRow.slice(27, 38);
+    "Speed Test Screenshot","Best Carrier","Data Closet Access","Additional Notes"];
+  const networkRow = [27,28,29,30,31,32,33,34,37].map(i => siteFieldsRow[i]);
 
   // Only show what's actually applicable to this site -- the overall result, plus whichever
   // factors were actually checked. Nothing is listed for factors that don't apply here.
@@ -1928,12 +2103,32 @@ async function buildSubmissionPackage(){
     ...(checkedFactorRows.length ? checkedFactorRows : [["No complexity factors triggered", ""]]),
   ];
 
+  // Only keep columns that actually have something written in them somewhere in the sheet --
+  // an empty column (nobody filled that field in for any row) is dropped entirely rather than
+  // exported as a blank column. A column stays if ANY row has a value in it (e.g. one room has
+  // notes and another doesn't -- Room Notes still shows up, just blank for the room without one).
+  function keepFilledColumns(headers, rows){
+    if(!rows.length) return { headers, rows };
+    const keep = headers.map((_, i) => rows.some(r => {
+      const v = r[i];
+      return v !== undefined && v !== null && String(v).trim() !== "";
+    }));
+    return {
+      headers: headers.filter((_, i) => keep[i]),
+      rows: rows.map(r => r.filter((_, i) => keep[i])),
+    };
+  }
+  const giFiltered = keepFilledColumns(generalInfoHeader, [generalInfoRow]);
+  const roomsFiltered = keepFilledColumns(roomsHeader, roomsRows);
+  const networkFiltered = keepFilledColumns(networkHeader, [networkRow]);
+  const mergedFiltered = keepFilledColumns(mergedHeader, mergedRows);
+
   const summaryWorkbookZip = await buildStyledWorkbook([
-    { name: "General Info", headers: generalInfoHeader, rows: [generalInfoRow] },
-    { name: "Rooms", headers: roomsHeader, rows: roomsRows },
-    { name: "Network", headers: networkHeader, rows: [networkRow] },
+    { name: "General Info", headers: giFiltered.headers, rows: giFiltered.rows },
+    { name: "Rooms", headers: roomsFiltered.headers, rows: roomsFiltered.rows },
+    { name: "Network", headers: networkFiltered.headers, rows: networkFiltered.rows },
     { name: "Complexity", headers: complexityHeader, rows: complexityRows },
-    { name: "All Combined", headers: mergedHeader, rows: mergedRows, freezeCols: 2 },
+    { name: "All Combined", headers: mergedFiltered.headers, rows: mergedFiltered.rows, freezeCols: 2 },
   ], JSZip);
   const summaryWorkbookBlob = await summaryWorkbookZip.generateAsync({ type: "blob" });
   files.push({ path: "Site Survey Summary.xlsx", blob: summaryWorkbookBlob });
@@ -1989,7 +2184,7 @@ function wireToggleField(toggleId, fieldId, showText, hideText){
 const pocTitleToggleApi = wireToggleField("pocTitleToggle", "pocTitleField", "+ Add title", "- Hide title");
 const pocEmailToggleApi = wireToggleField("pocEmailToggle", "pocEmailField", "+ Add email", "- Hide email");
 const pocPhoneToggleApi = wireToggleField("pocPhoneToggle", "pocPhoneField", "+ Add phone", "- Hide phone");
-const prefOption2ToggleApi = wireToggleField("prefOption2Toggle", "prefOption2Fields", "+ Add another preferred date/time", "- Hide second preferred date/time");
+const prefOption2ToggleApi = wireToggleField("prefOption2Toggle", "prefOption2Fields", "+ Add another preferred install date/time", "- Hide second preferred install date/time");
 const installNotesToggleApi = wireToggleField("installNotesToggle", "installNotesField", "+ Add notes", "- Hide notes");
 const survEmailToggleApi = wireToggleField("survEmailToggle", "survEmailField", "+ Add email", "- Hide email");
 const survPhoneToggleApi = wireToggleField("survPhoneToggle", "survPhoneField", "+ Add phone", "- Hide phone");
@@ -2031,7 +2226,7 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
 
   statusEl.className = "status ok";
   statusEl.textContent = `Done — exported ${pkg.roomCount} room(s). Check your downloads for "${a.download}".`;
-  formDirty = false;
+  setFormDirty(false);
 });
 
 // --- Start New Survey ---
@@ -2079,7 +2274,7 @@ document.getElementById("startNewBtn").addEventListener("click", ()=>{
   statusMsgEl.className = "status";
   statusMsgEl.textContent = "";
   setDraftStatus("Started a new survey — form cleared.");
-  formDirty = false;
+  setFormDirty(false);
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 </script>
