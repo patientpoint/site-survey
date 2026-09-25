@@ -500,7 +500,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </button>
         <div class="cf-dropdown-panel" id="cfPanel-hard" style="display:none;">
           <div class="cf-list">
-            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="5+ devices / multi-day install"> 5+ devices / multi-day install</label>
+            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="5+ locations / multi-day install"> 5+ locations / multi-day install</label>
             <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Non-standard wall type"> Non-standard wall type</label>
             <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Outlet distance 36-90&quot; or non-standard outlet"> Outlet distance 36-90" or non-standard outlet</label>
             <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="hard" value="Electrical work needed"> Electrical work needed</label>
@@ -511,25 +511,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
       </div>
       <div class="cf-selected-chips" id="cfChips-hard"></div>
-    </div>
-
-    <div class="cf-group">
-      <h3 class="cf-group-title">Soft Flag Factors <span class="cf-group-note">(two or more = Complex)</span></h3>
-      <div class="cf-dropdown">
-        <button type="button" class="cf-dropdown-toggle" id="cfToggle-soft">
-          <span id="cfToggleLabel-soft">Select factors...</span>
-          <span class="cf-dropdown-arrow">▾</span>
-        </button>
-        <div class="cf-dropdown-panel" id="cfPanel-soft" style="display:none;">
-          <div class="cf-list">
-            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Close to corner / under 75% sightline"> Close to corner / under 75% sightline</label>
-            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Landlord permit required"> Landlord permit required</label>
-            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="No stands allowed"> No stands allowed</label>
-            <label class="cf-item"><input type="checkbox" class="cf-check" data-tier="soft" value="Planned competitor removal"> Planned competitor removal</label>
-          </div>
-        </div>
-      </div>
-      <div class="cf-selected-chips" id="cfChips-soft"></div>
     </div>
 
     <div class="cf-group">
@@ -1383,21 +1364,20 @@ function wirePhotoSlot(slotEl, onFile){
 }
 
 // --- Complexity Assessment ---
-// Rules: any checked "blocked" or "hard" factor -> Complex. Two-or-more checked "soft"
-// factors -> Complex. Otherwise -> Simple. (Only two outcomes are ever surfaced: Simple/Complex.)
+// Rules: any checked "blocked" or "hard" factor -> Complex. Otherwise -> Simple. (Only two
+// outcomes are ever surfaced: Simple/Complex.)
 function computeComplexity(){
   const checked = Array.from(document.querySelectorAll(".cf-check:checked"));
   const hardChecked = checked.filter(c=>c.dataset.tier==="hard");
-  const softChecked = checked.filter(c=>c.dataset.tier==="soft");
   const blockedChecked = checked.filter(c=>c.dataset.tier==="blocked");
 
   // Only two possible outcomes surface to the user: Simple or Complex. A checked "blocked"
   // factor still makes the case Complex (it's just the most severe tier of Complex reasons),
   // it no longer produces a separate "Blocked" classification.
   let result, reasons;
-  if(blockedChecked.length || hardChecked.length || softChecked.length >= 2){
+  if(blockedChecked.length || hardChecked.length){
     result = "Complex";
-    reasons = [...blockedChecked, ...hardChecked, ...softChecked].map(c=>c.value);
+    reasons = [...blockedChecked, ...hardChecked].map(c=>c.value);
   } else {
     result = "Simple";
     reasons = [];
@@ -1416,12 +1396,12 @@ function computeComplexity(){
   return { result, factors: checked.map(c=>c.value) };
 }
 
-// Each tier (hard/soft/blocked) is picked from its own dropdown instead of an always-visible
+// Each tier (hard/blocked) is picked from its own dropdown instead of an always-visible
 // checkbox grid, to save vertical space -- the checkboxes still live inside the dropdown panel
 // (so all the existing .cf-check based logic above needs no changes), and whatever's picked is
 // echoed right below as small removable chips so the surveyor can see the selection without
 // reopening the dropdown.
-const CF_TIERS = ["hard", "soft", "blocked"];
+const CF_TIERS = ["hard", "blocked"];
 function renderCfChips(){
   CF_TIERS.forEach(tier=>{
     const chipsEl = document.getElementById("cfChips-" + tier);
@@ -1498,7 +1478,6 @@ function syncAutoComplexityFactors(){
   const dataClosetVal = document.getElementById("dataCloset").value;
   const captivePortalVal = document.getElementById("captivePortal").value;
   const links = [
-    { value: "5+ devices / multi-day install", condition: roomList.length >= 5 },
     { value: "Electrical work needed", condition: roomList.some(r => r.outletsNeeded === "Yes") },
     { value: 'Outlet distance 36-90" or non-standard outlet', condition: roomList.some(r => r.outletOk === "No") },
     { value: "Hardline only / blocked ports / weak signal", condition: netTypeVal === "Wired (Ethernet)" && dataClosetVal === "No" },
@@ -1695,6 +1674,39 @@ function maybeAutoSave(){
   if(autoSaveHandle) doAutoSave();
 }
 
+// --- Share-to-location helper (mobile) ---
+// The File System Access API used above for desktop auto-save (showSaveFilePicker) has no
+// equivalent on any mobile browser, so a plain download is normally the only fallback there --
+// and that always lands in the phone's generic Downloads/Files folder, not wherever the surveyor
+// actually wants it. The Web Share API gets around that: tapping Share opens the phone's native
+// share sheet, and from there the surveyor can send the file straight into OneDrive, Google
+// Drive, "Save to Files" (which includes iCloud Drive and any other connected cloud provider on
+// iPhone), or any other app that accepts files -- one tap, no Downloads-folder detour needed.
+// This only works as the direct result of a tap (same rule as downloads), so it's used for the
+// manual Save Draft / Export button clicks below, never for the silent background safety-net
+// save. If the browser doesn't support sharing files (or the surveyor backs out of the share
+// sheet), this quietly falls back to the old plain download.
+async function shareOrDownloadFile(blob, filename, mimeType){
+  try{
+    const file = new File([blob], filename, { type: mimeType });
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      await navigator.share({ files: [file], title: filename });
+      return "shared";
+    }
+  }catch(e){
+    if(e.name === "AbortError") return "cancelled"; // surveyor backed out of the share sheet
+    // any other share failure -- fall through to a plain download instead
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  return "downloaded";
+}
+
 // --- Background safety-net save ---
 // visibilitychange/pagehide fire far more reliably on mobile than beforeunload does, so this is
 // the real protection behind the on-screen "Unsaved changes" banner: the instant the tab gets
@@ -1732,20 +1744,23 @@ window.addEventListener("pagehide", backgroundSafetyNetSave);
 
 saveDraftBtn.addEventListener("click", async ()=>{
   if(!("showSaveFilePicker" in window)){
-    // No persistent-file support in this browser (Safari, Firefox, mobile) -- just download a
-    // one-time snapshot, same as before.
+    // No persistent-file support in this browser (Safari, Firefox, mobile) -- share it instead
+    // so the surveyor can pick OneDrive/Google Drive/Files directly, falling back to a plain
+    // download if the browser can't share files.
     setDraftStatus("Saving draft…");
     try{
       const blob = await buildDraftBlob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${buildSiteLabel()} - Draft.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setDraftStatus(`Draft saved — "${a.download}". Keep that file to resume later.`);
-      setFormDirty(false);
+      const filename = `${buildSiteLabel()} - Draft.zip`;
+      const outcome = await shareOrDownloadFile(blob, filename, "application/zip");
+      if(outcome === "cancelled"){
+        setDraftStatus("Share cancelled — draft not saved.");
+      } else if(outcome === "shared"){
+        setDraftStatus(`Draft sent — pick OneDrive, Google Drive, or Files to save "${filename}".`);
+        setFormDirty(false);
+      } else {
+        setDraftStatus(`Draft saved — "${filename}". Keep that file to resume later.`);
+        setFormDirty(false);
+      }
     }catch(e){
       setDraftStatus("Couldn't save the draft: " + e.message, true);
     }
@@ -2094,7 +2109,7 @@ async function buildSubmissionPackage(){
 
   // Only show what's actually applicable to this site -- the overall result, plus whichever
   // factors were actually checked. Nothing is listed for factors that don't apply here.
-  const CF_TIER_LABELS = { hard: "Hard Stop", soft: "Soft Flag", blocked: "Blocked" };
+  const CF_TIER_LABELS = { hard: "Hard Stop", blocked: "Blocked" };
   const checkedFactorRows = Array.from(document.querySelectorAll(".cf-check:checked"))
     .map(cb => [cb.value, CF_TIER_LABELS[cb.dataset.tier] || cb.dataset.tier]);
   const complexityHeader = ["Complexity Factor", "Tier"];
@@ -2216,16 +2231,23 @@ document.getElementById("exportBtn").addEventListener("click", async ()=>{
   const zip = new JSZip();
   pkg.files.forEach(f => zip.file(`${pkg.siteFolder}/${f.path}`, f.blob));
   const blob = await zip.generateAsync({type:"blob"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${pkg.siteFolder} - ${pkg.survNameForFile} - Site Survey Export.zip`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  const filename = `${pkg.siteFolder} - ${pkg.survNameForFile} - Site Survey Export.zip`;
+  // On phones (no showSaveFilePicker support), this opens the native share sheet so the export
+  // can go straight to OneDrive/Google Drive/Files instead of the phone's Downloads folder;
+  // on desktop, or if sharing isn't available, it falls back to a plain download.
+  const outcome = ("showSaveFilePicker" in window)
+    ? (()=>{ const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); return "downloaded"; })()
+    : await shareOrDownloadFile(blob, filename, "application/zip");
 
+  if(outcome === "cancelled"){
+    statusEl.className = "status";
+    statusEl.textContent = "Export cancelled — nothing was saved.";
+    return;
+  }
   statusEl.className = "status ok";
-  statusEl.textContent = `Done — exported ${pkg.roomCount} room(s). Check your downloads for "${a.download}".`;
+  statusEl.textContent = outcome === "shared"
+    ? `Done — exported ${pkg.roomCount} room(s). Sent "${filename}" — pick where to save it.`
+    : `Done — exported ${pkg.roomCount} room(s). Check your downloads for "${filename}".`;
   setFormDirty(false);
 });
 
